@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Pac-Man - Three.js</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        <div id="hud">
+            <div id="score">Score: <span id="score-value">0</span></div>
+            <div id="lives">Lives: <span id="lives-value">3</span></div>
+            <div id="level">Level: <span id="level-value">1</span></div>
+        </div>
+        <div id="game-over" class="hidden">
+            <h1>GAME OVER</h1>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">Restart Game</button>
+            <a href="/" class="btn-home">Back to Home</a>
+        </div>
+        <div id="instructions" class="hidden">
+            <h2>Controls</h2>
+            <p>Arrow Keys or WASD to move</p>
+            <p>Collect all dots while avoiding ghosts!</p>
+            <button id="start-btn">Start Game</button>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

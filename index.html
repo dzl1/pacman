@@ -3,28 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Pac-Man - Three.js</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Game Hub - Classic Games Reimagined</title>
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <div id="game-container">
-        <div id="hud">
-            <div id="score">Score: <span id="score-value">0</span></div>
-            <div id="lives">Lives: <span id="lives-value">3</span></div>
-            <div id="level">Level: <span id="level-value">1</span></div>
-        </div>
-        <div id="game-over" class="hidden">
-            <h1>GAME OVER</h1>
-            <p>Final Score: <span id="final-score">0</span></p>
-            <button id="restart-btn">Restart Game</button>
-        </div>
-        <div id="instructions" class="hidden">
-            <h2>Controls</h2>
-            <p>Arrow Keys or WASD to move</p>
-            <p>Collect all dots while avoiding ghosts!</p>
-            <button id="start-btn">Start Game</button>
-        </div>
+    <div class="background">
+        <div class="stars"></div>
     </div>
-    <script type="module" src="main.js"></script>
-</body>
-</html>
+
+    <header>
+        <div class="container">
+            <h1 class="logo">🎮 GAME HUB</h1>
+            <p class="tagline">Classic Games Reimagined with Three.js</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="intro">
+                <h2>Welcome to Game Hub</h2>
+                <p>Experience your favorite classic games reimagined in stunning 3D using Three.js. Each game features smooth animations, particle effects, and immersive graphics.</p>
+            </section>
+
+            <section class="games-grid">
+                <h2>Available Games</h2>
+                <div class="grid">
+                    <div class="game-card">
+                        <div class="game-card-image">
+                            <div class="pacman-preview">
+                                <span class="pacman-icon">🟡</span>
+                                <span class="ghost">👻</span>
+                                <span class="ghost">👻</span>
+                                <span class="ghost">👻</span>
+                            </div>
+                        </div>
+                        <h3>Pac-Man 3D</h3>
+                        <p>Navigate the maze, collect dots, and avoid ghosts in this classic game reimagined in stunning 3D.</p>
+                        <ul class="features">
+                            <li>✨ 3D Maze Environment</li>
+                            <li>🎨 Glowing Effects & Animations</li>
+                            <li>👾 AI-Controlled Ghosts</li>
+                            <li>💥 Particle Explosions</li>
+                            <li>⚡ Power-ups & Power Pellets</li>
+                        </ul>
+                        <a href="/games/pacman/" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-card coming-soon">
+                        <div class="game-card-image">
+                            <div class="placeholder">?</div>
+                        </div>
+                        <h3>Coming Soon</h3>
+                        <p>More classic games are being developed and will be added soon!</p>
+                        <p class="coming-text">Check back later for new games...</p>
+                        <button class="btn btn-disabled" disabled>Coming Soon</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="about">
+                <h2>About Game Hub</h2>
+                <p>Game Hub is a collection of classic games rebuilt using modern web technologies. Each game is implemented with Three.js to provide 3D graphics, smooth animations, and engaging visual effects.</p>
+                
+                <h3>Technology Stack</h3>
+                <ul class="tech-stack">
+                    <li><strong>Three.js</strong> - 3D graphics library for WebGL</li>
+                    <li><strong>Vite</strong> - Fast build tool and development server</li>
+                    <li><strong>JavaScript</strong> - Game logic and interactivity</li>
+                    <li><strong>Git</strong> - Version control and external project integration</li>
+                </ul>
+
+                <h3>Integration with External Projects</h3>
+                <p>This hub is designed to easily integrate and reference other Git projects. Each game can be:</p>
+                <ul class="integration-list">
+                    <li>Pulled in as Git submodules for version control</li>
+                    <li>Referenced as npm dependencies</li>
+                    <li>Cloned as separate folders within the games directory</li>
+                </ul>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Game Hub. All rights reserved. | <a href="https://github.com/dzl1/pacman" target="_blank">View on GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Create animated background stars
+        const starsContainer = document.querySelector('.stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+    </script>

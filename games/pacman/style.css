@@ -26,6 +26,26 @@ body {
     z-index: 1;
 }
 
+.back-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 150;
+    padding: 10px 20px;
+    background: rgba(102, 126, 234, 0.8);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn:hover {
+    background: rgba(102, 126, 234, 1);
+    transform: scale(1.05);
+}
+
 #hud {
     position: absolute;
     top: 20px;
@@ -94,6 +114,7 @@ button {
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    width: 100%;
 }
 
 button:hover {
@@ -105,8 +126,26 @@ button:active {
     transform: scale(0.95);
 }
 
+.btn-home {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 40px;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-home:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.7);
+}
+
 .hidden {
     display: none !important;
 }
-
-
