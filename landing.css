@@ -191,9 +191,47 @@ h2::after {
     animation-delay: 0.9s;
 }
 
+.flappy-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+    height: 100%;
+    font-size: 56px;
+    position: relative;
+    animation: float 3s ease-in-out infinite;
+}
+
+.flappy-bird {
+    font-size: 70px;
+    animation: flap 0.6s ease-in-out infinite;
+}
+
+.flappy-pipe {
+    font-size: 60px;
+    color: #39d353;
+    animation: pipeSlide 2.5s linear infinite;
+}
+
+.flappy-pipe:nth-child(3) {
+    animation-delay: 0.8s;
+}
+
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
+}
+
+@keyframes flap {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+@keyframes pipeSlide {
+    0% { transform: translateX(30px); opacity: 0.6; }
+    50% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-30px); opacity: 0.6; }
 }
 
 @keyframes drift {

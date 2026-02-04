@@ -1,0 +1,113 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 100%);
+    color: #0f172a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: min(900px, 90vw);
+    height: min(600px, 85vh);
+    background: linear-gradient(180deg, #bae6fd 0%, #38bdf8 60%, #22c55e 100%);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.hud {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    gap: 16px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.15);
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    color: #f8fafc;
+    text-align: center;
+    padding: 20px;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay h1 {
+    font-size: 40px;
+}
+
+.overlay p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+button {
+    border: none;
+    background: #f97316;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.4);
+    transition: transform 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #f8fafc;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    z-index: 5;
+}
+
+@media (max-width: 700px) {
+    .overlay h1 {
+        font-size: 30px;
+    }
+
+    .hud {
+        flex-direction: column;
+        gap: 6px;
+    }
+}

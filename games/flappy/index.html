@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flappy Flight</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <a class="back-button" href="/">← Back to Game Hub</a>
+
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div class="hud">
+            <div>Score: <span id="score-value">0</span></div>
+            <div>Best: <span id="best-value">0</span></div>
+        </div>
+
+        <div id="overlay" class="overlay">
+            <h1>Flappy Flight</h1>
+            <p>Press Space or click to flap</p>
+            <button id="start-btn">Start</button>
+        </div>
+
+        <div id="game-over" class="overlay hidden">
+            <h1>Game Over</h1>
+            <p>Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">Restart</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
