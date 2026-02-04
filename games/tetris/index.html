@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris - Game Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="../../index.html" class="back-link">← Back to Games</a>
+            <h1>Tetris</h1>
+        </div>
+
+        <div class="game-layout">
+            <div class="game-area">
+                <canvas id="game-canvas"></canvas>
+                
+                <div id="overlay" class="overlay">
+                    <div class="overlay-content">
+                        <h2>Tetris</h2>
+                        <p>Use arrow keys to move and rotate blocks</p>
+                        <ul class="controls">
+                            <li><strong>←/→</strong> Move left/right</li>
+                            <li><strong>↓</strong> Soft drop</li>
+                            <li><strong>↑</strong> Rotate</li>
+                            <li><strong>Space</strong> Hard drop</li>
+                        </ul>
+                        <button id="start-btn" class="btn">Start Game</button>
+                    </div>
+                </div>
+
+                <div id="game-over" class="overlay hidden">
+                    <div class="overlay-content">
+                        <h2>Game Over!</h2>
+                        <p class="final-score">Score: <span id="final-score">0</span></p>
+                        <button id="restart-btn" class="btn">Play Again</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="info-panel">
+                    <h3>Score</h3>
+                    <div class="score-value" id="score-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Lines</h3>
+                    <div class="score-value" id="lines-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Level</h3>
+                    <div class="score-value" id="level-value">1</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Best Score</h3>
+                    <div class="score-value" id="best-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Next</h3>
+                    <canvas id="next-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

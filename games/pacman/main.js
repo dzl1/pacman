@@ -272,7 +272,7 @@ function updatePacman() {
         }
     }
 
-    // Move in current direction
+    // Move in current direction -- this is where we need to check for collisions with walls and adjust movement accordingly
     if (pacmanDirection.x !== 0 || pacmanDirection.z !== 0) {
         // Calculate where Pac-Man would be after moving
         const nextPosX = pacman.position.x + pacmanDirection.x * PACMAN_SPEED;
@@ -476,7 +476,7 @@ function updateGhosts() {
         }
     });
 
-    // Power-up timer
+    // Power-up timer - this needs to be outside the ghost loop to avoid multiple updates per frame
     if (gameState.powerUpActive) {
         gameState.powerUpTimer--;
         
@@ -499,7 +499,7 @@ function updateGhosts() {
                 }
             });
         } else if (gameState.powerUpTimer > 600) {
-            // Keep ghosts solid blue when not flashing yet
+            // Keep ghosts solid blue when not flashing yet -- this is important to reset them back to blue after flashing starts
             ghosts.forEach((ghost, index) => {
                 if (ghost.vulnerable) {
                     ghost.mesh.material.color.setHex(0x0000ff);
