@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Wars - Game Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <a href="../../index.html" class="back-link">← Back to Games</a>
+            <h1>Tower Wars</h1>
+        </header>
+
+        <div class="hud">
+            <div class="hud-item">Gold: <span id="gold-value">100</span></div>
+            <div class="hud-item">Gems: <span id="gems-value">0</span></div>
+            <div class="hud-item">Lives: <span id="lives-value">20</span></div>
+            <div class="hud-item">Wave: <span id="wave-value">1</span></div>
+            <button id="start-wave" class="btn">Start Wave</button>
+            <button id="upgrade-btn" class="btn btn-secondary">Upgrades</button>
+            <label class="toggle">
+                <input id="auto-wave" type="checkbox">
+                <span class="slider"></span>
+                <span class="toggle-label">Auto Start</span>
+            </label>
+        </div>
+
+        <div class="game-layout">
+            <div class="game-area">
+                <canvas id="game-canvas"></canvas>
+                <div id="overlay" class="overlay">
+                    <div class="overlay-content">
+                        <h2>Tower Wars (PvE)</h2>
+                        <p>Place towers to stop enemies from reaching the base.</p>
+                        <ul class="controls">
+                            <li><strong>Click</strong> to place or upgrade towers</li>
+                            <li><strong>1/2/3</strong> to select tower type</li>
+                        </ul>
+                        <button id="start-btn" class="btn">Start Game</button>
+                    </div>
+                </div>
+                <div id="game-over" class="overlay hidden">
+                    <div class="overlay-content">
+                        <h2>Defeat</h2>
+                        <p class="final-score">Waves Survived: <span id="final-score">1</span></p>
+                        <button id="restart-btn" class="btn">Try Again</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="panel">
+                    <h3>Build</h3>
+                    <div id="tower-list" class="tower-list"></div>
+                </div>
+                <div class="panel" id="selected-panel">
+                    <h3>Selected Tower</h3>
+                    <p id="selected-info">None</p>
+                    <div class="selected-actions">
+                        <button id="upgrade-tower" class="btn btn-small">Upgrade</button>
+                        <button id="sell-tower" class="btn btn-small btn-danger">Sell</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3>Tips</h3>
+                    <p>Upgrade towers to level 3 with gold.</p>
+                    <p>Spend Gems in the upgrade menu to boost tower types.</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="upgrade-overlay" class="overlay hidden">
+        <div class="overlay-content">
+            <h2>Upgrades</h2>
+            <p>Spend Gems to improve your tower types.</p>
+            <div id="upgrade-list" class="upgrade-list"></div>
+            <button id="close-upgrades" class="btn">Resume</button>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

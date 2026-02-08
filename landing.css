@@ -485,3 +485,63 @@ footer a:hover {
     }
 }
 
+/* Tower Wars Preview */
+.tower-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    height: 100%;
+    animation: float 3s ease-in-out infinite;
+}
+
+.tower-icon {
+    font-size: 64px;
+    animation: towerPulse 2.5s ease-in-out infinite;
+}
+
+.tower-enemy {
+    font-size: 46px;
+    animation: enemyMarch 2s linear infinite;
+}
+
+.tower-arrow {
+    font-size: 30px;
+    color: #fbbf24;
+    animation: arrowFly 1.6s ease-in-out infinite;
+}
+
+@keyframes towerPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes enemyMarch {
+    0% {
+        transform: translateX(10px);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-10px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes arrowFly {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(8px);
+    }
+}
+

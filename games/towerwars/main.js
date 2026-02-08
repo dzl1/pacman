@@ -1,0 +1,645 @@
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+const goldEl = document.getElementById('gold-value');
+const gemsEl = document.getElementById('gems-value');
+const livesEl = document.getElementById('lives-value');
+const waveEl = document.getElementById('wave-value');
+const startWaveBtn = document.getElementById('start-wave');
+const upgradeBtn = document.getElementById('upgrade-btn');
+const autoWaveToggle = document.getElementById('auto-wave');
+const overlay = document.getElementById('overlay');
+const gameOverOverlay = document.getElementById('game-over');
+const upgradeOverlay = document.getElementById('upgrade-overlay');
+const finalScoreEl = document.getElementById('final-score');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const closeUpgradesBtn = document.getElementById('close-upgrades');
+const towerList = document.getElementById('tower-list');
+const upgradeList = document.getElementById('upgrade-list');
+const selectedInfo = document.getElementById('selected-info');
+const upgradeTowerBtn = document.getElementById('upgrade-tower');
+const sellTowerBtn = document.getElementById('sell-tower');
+
+const TILE = 48;
+const COLS = 14;
+const ROWS = 10;
+canvas.width = COLS * TILE;
+canvas.height = ROWS * TILE;
+
+const pathTiles = [
+    { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
+    { x: 3, y: 5 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 },
+    { x: 6, y: 6 }, { x: 6, y: 5 }, { x: 6, y: 4 }, { x: 7, y: 4 },
+    { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 9, y: 3 }, { x: 9, y: 2 },
+    { x: 10, y: 2 }, { x: 11, y: 2 }, { x: 12, y: 2 }, { x: 13, y: 2 }
+];
+
+const towerTypes = {
+    rapid: { cost: 50, range: 110, fireRate: 300, damage: 8, color: '#38bdf8', unlockWave: 1 },
+    cannon: { cost: 80, range: 140, fireRate: 700, damage: 20, splash: 50, color: '#f97316', unlockWave: 1 },
+    slow: { cost: 70, range: 120, fireRate: 600, damage: 5, slow: 0.6, color: '#34d399', unlockWave: 1 },
+    sniper: { cost: 120, range: 220, fireRate: 1000, damage: 40, color: '#a855f7', unlockWave: 10 },
+    mortar: { cost: 150, range: 170, fireRate: 1200, damage: 35, splash: 80, color: '#f59e0b', unlockWave: 20 }
+};
+
+const towerUpgrades = {
+    rapid: { level: 0, max: 3, gemCost: 4, damageBonus: 2, rangeBonus: 6, fireRateBonus: -20 },
+    cannon: { level: 0, max: 3, gemCost: 5, damageBonus: 6, rangeBonus: 8, fireRateBonus: -30 },
+    slow: { level: 0, max: 3, gemCost: 4, damageBonus: 1, rangeBonus: 10, fireRateBonus: -25 },
+    sniper: { level: 0, max: 3, gemCost: 6, damageBonus: 8, rangeBonus: 15, fireRateBonus: -40 },
+    mortar: { level: 0, max: 3, gemCost: 7, damageBonus: 7, rangeBonus: 10, fireRateBonus: -35 }
+};
+
+const state = {
+    running: false,
+    waveActive: false,
+    gold: 100,
+    gems: 0,
+    gemsEarned: 0,
+    lives: 20,
+    wave: 1,
+    paused: false,
+    autoWave: false
+};
+
+let selectedTower = 'rapid';
+let selectedTowerInstance = null;
+let lastTime = 0;
+let spawnTimer = 0;
+let spawnQueue = [];
+
+const towers = [];
+const enemies = [];
+const projectiles = [];
+
+function gridToPixel(cell) {
+    return {
+        x: cell.x * TILE + TILE / 2,
+        y: cell.y * TILE + TILE / 2
+    };
+}
+
+const pathPoints = pathTiles.map(gridToPixel);
+
+function getTowerStats(type) {
+    const base = towerTypes[type];
+    const upgrade = towerUpgrades[type];
+    const level = upgrade ? upgrade.level : 0;
+    return {
+        range: base.range + level * upgrade.rangeBonus,
+        damage: base.damage + level * upgrade.damageBonus,
+        fireRate: Math.max(150, base.fireRate + level * upgrade.fireRateBonus),
+        splash: base.splash || 0,
+        slow: base.slow || 0,
+        color: base.color,
+        cost: base.cost
+    };
+}
+
+function renderTowerButtons() {
+    towerList.innerHTML = '';
+    const types = Object.entries(towerTypes).sort((a, b) => a[1].unlockWave - b[1].unlockWave);
+    types.forEach(([key, data], index) => {
+        const button = document.createElement('button');
+        const unlocked = state.wave >= data.unlockWave;
+        button.className = `tower-btn${key === selectedTower ? ' active' : ''}${unlocked ? '' : ' locked'}`;
+        button.dataset.tower = key;
+        button.textContent = unlocked ? `${index + 1}) ${key[0].toUpperCase() + key.slice(1)} (${data.cost})` : `Unlocks at wave ${data.unlockWave}`;
+        if (!unlocked) {
+            button.disabled = true;
+        }
+        button.addEventListener('click', () => {
+            if (!unlocked) return;
+            selectedTower = key;
+            renderTowerButtons();
+        });
+        towerList.appendChild(button);
+    });
+}
+
+function getOrderedTowerKeys() {
+    return Object.entries(towerTypes)
+        .sort((a, b) => a[1].unlockWave - b[1].unlockWave)
+        .map(([key]) => key);
+}
+
+function selectTowerByIndex(index) {
+    const keys = getOrderedTowerKeys();
+    const key = keys[index];
+    if (!key) return;
+    if (state.wave < towerTypes[key].unlockWave) return;
+    selectedTower = key;
+    renderTowerButtons();
+}
+
+function renderUpgradeList() {
+    upgradeList.innerHTML = '';
+    Object.entries(towerTypes).forEach(([key, data]) => {
+        if (state.wave < data.unlockWave) return;
+        const upgrade = towerUpgrades[key];
+        const card = document.createElement('div');
+        card.className = 'upgrade-card';
+        const canUpgrade = upgrade.level < upgrade.max;
+        const nextCost = upgrade.gemCost * (upgrade.level + 1);
+        const affordable = state.gems >= nextCost;
+        card.innerHTML = `
+            <h4>${key[0].toUpperCase() + key.slice(1)} Lv ${upgrade.level}/${upgrade.max}</h4>
+            <p>+${upgrade.damageBonus} dmg, +${upgrade.rangeBonus} range, ${upgrade.fireRateBonus}ms fire rate</p>
+            <button class="btn btn-small" ${canUpgrade && affordable ? '' : 'disabled'}>${canUpgrade ? `Upgrade (${nextCost} Gems)` : 'Maxed'}</button>
+        `;
+        const button = card.querySelector('button');
+        button.addEventListener('click', () => {
+            if (!canUpgrade) return;
+            if (state.gems < nextCost) return;
+            state.gems -= nextCost;
+            upgrade.level += 1;
+            applyGlobalTowerUpgrade(key);
+            updateHud();
+            renderUpgradeList();
+        });
+        upgradeList.appendChild(card);
+    });
+}
+
+function setPaused(paused) {
+    state.paused = paused;
+    if (paused) {
+        upgradeOverlay.classList.remove('hidden');
+    } else {
+        upgradeOverlay.classList.add('hidden');
+    }
+}
+
+function updateSelectedPanel() {
+    if (!selectedTowerInstance) {
+        selectedInfo.textContent = 'None';
+        upgradeTowerBtn.disabled = true;
+        sellTowerBtn.disabled = true;
+        upgradeTowerBtn.textContent = 'Upgrade';
+        sellTowerBtn.textContent = 'Sell';
+        return;
+    }
+    selectedInfo.textContent = `${selectedTowerInstance.type.toUpperCase()} L${selectedTowerInstance.level}`;
+    upgradeTowerBtn.disabled = false;
+    sellTowerBtn.disabled = false;
+    if (selectedTowerInstance.level >= 3) {
+        upgradeTowerBtn.textContent = 'Max Level';
+        upgradeTowerBtn.disabled = true;
+    } else {
+        const upgradeCost = Math.floor(selectedTowerInstance.baseCost * (0.8 + 0.2 * (selectedTowerInstance.level - 1)));
+        upgradeTowerBtn.textContent = `Upgrade (${upgradeCost}g)`;
+    }
+    const refund = Math.floor(selectedTowerInstance.invested * 0.6);
+    sellTowerBtn.textContent = `Sell (+${refund}g)`;
+}
+
+function applyGlobalTowerUpgrade(type) {
+    const upgrade = towerUpgrades[type];
+    if (!upgrade) return;
+    towers.forEach(tower => {
+        if (tower.type !== type) return;
+        tower.range += upgrade.rangeBonus;
+        tower.damage += upgrade.damageBonus;
+        tower.fireRate = Math.max(150, tower.fireRate + upgrade.fireRateBonus);
+    });
+}
+
+function resetGame() {
+    state.running = true;
+    state.waveActive = false;
+    state.gold = 100;
+    state.gems = 0;
+    state.gemsEarned = 0;
+    state.lives = 20;
+    state.wave = 1;
+    state.paused = false;
+    state.autoWave = autoWaveToggle.checked;
+    spawnQueue = [];
+    spawnTimer = 0;
+    towers.length = 0;
+    enemies.length = 0;
+    projectiles.length = 0;
+    selectedTowerInstance = null;
+    Object.values(towerUpgrades).forEach(upgrade => {
+        upgrade.level = 0;
+    });
+
+    updateHud();
+    renderTowerButtons();
+    renderUpgradeList();
+    updateSelectedPanel();
+    overlay.classList.add('hidden');
+    gameOverOverlay.classList.add('hidden');
+    upgradeOverlay.classList.add('hidden');
+}
+
+function updateHud() {
+    goldEl.textContent = state.gold;
+    gemsEl.textContent = state.gems;
+    livesEl.textContent = state.lives;
+    waveEl.textContent = state.wave;
+}
+
+function startWave() {
+    if (state.waveActive || !state.running || state.paused) return;
+
+    const enemyCount = 8 + state.wave * 3;
+    const baseHp = 40 + state.wave * 15;
+    const baseSpeed = 40 + state.wave * 2;
+    const baseArmor = Math.floor(state.wave / 2);
+    const armoredWave = state.wave % 5 === 0;
+
+    spawnQueue = Array.from({ length: enemyCount }, (_, i) => {
+        const isArmored = armoredWave && i % 4 === 0;
+        const armor = baseArmor + (isArmored ? 10 : 0);
+        const hp = baseHp + i * 2 + armor * 3;
+        return {
+            hp,
+            maxHp: hp,
+            speed: baseSpeed,
+            reward: 10 + Math.floor(state.wave / 2),
+            armor,
+            armored: isArmored
+        };
+    });
+
+    state.waveActive = true;
+}
+
+function spawnEnemy(template) {
+    const start = pathPoints[0];
+    enemies.push({
+        x: start.x,
+        y: start.y,
+        hp: template.hp,
+        maxHp: template.maxHp,
+        speed: template.speed,
+        reward: template.reward,
+        armor: template.armor || 0,
+        armored: template.armored || false,
+        pathIndex: 0,
+        slowUntil: 0,
+        slowFactor: 1
+    });
+}
+
+function updateEnemies(delta) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i];
+        const nextIndex = Math.min(enemy.pathIndex + 1, pathPoints.length - 1);
+        const target = pathPoints[nextIndex];
+        const dx = target.x - enemy.x;
+        const dy = target.y - enemy.y;
+        const distance = Math.hypot(dx, dy);
+        const speedMultiplier = enemy.slowUntil > performance.now() ? enemy.slowFactor : 1;
+        const moveDistance = (enemy.speed * speedMultiplier * delta) / 1000;
+
+        if (distance <= moveDistance) {
+            enemy.x = target.x;
+            enemy.y = target.y;
+            enemy.pathIndex = nextIndex;
+        } else {
+            enemy.x += (dx / distance) * moveDistance;
+            enemy.y += (dy / distance) * moveDistance;
+        }
+
+        if (enemy.pathIndex === pathPoints.length - 1) {
+            enemies.splice(i, 1);
+            state.lives -= 1;
+            updateHud();
+            if (state.lives <= 0) {
+                endGame();
+            }
+        }
+    }
+}
+
+function updateTowers(delta, time) {
+    towers.forEach(tower => {
+        tower.cooldown -= delta;
+        if (tower.cooldown > 0) return;
+
+        const target = enemies.find(enemy => {
+            const dist = Math.hypot(enemy.x - tower.x, enemy.y - tower.y);
+            return dist <= tower.range;
+        });
+
+        if (target) {
+            tower.cooldown = tower.fireRate;
+            projectiles.push({
+                x: tower.x,
+                y: tower.y,
+                target,
+                damage: tower.damage,
+                splash: tower.splash,
+                slow: tower.slow,
+                speed: 260,
+                color: tower.color
+            });
+        }
+    });
+}
+
+function updateProjectiles(delta) {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const proj = projectiles[i];
+        if (!proj.target || proj.target.hp <= 0) {
+            projectiles.splice(i, 1);
+            continue;
+        }
+
+        const dx = proj.target.x - proj.x;
+        const dy = proj.target.y - proj.y;
+        const distance = Math.hypot(dx, dy);
+        const travel = (proj.speed * delta) / 1000;
+
+        if (distance <= travel) {
+            applyDamage(proj, proj.target);
+            projectiles.splice(i, 1);
+        } else {
+            proj.x += (dx / distance) * travel;
+            proj.y += (dy / distance) * travel;
+        }
+    }
+}
+
+function applyDamage(projectile, target) {
+    if (projectile.splash) {
+        enemies.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - target.x, enemy.y - target.y);
+            if (dist <= projectile.splash) {
+                const effective = Math.max(1, projectile.damage - enemy.armor);
+                enemy.hp -= effective;
+            }
+        });
+    } else {
+        const effective = Math.max(1, projectile.damage - target.armor);
+        target.hp -= effective;
+    }
+
+    if (projectile.slow) {
+        target.slowFactor = projectile.slow;
+        target.slowUntil = performance.now() + 1500;
+    }
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        if (enemies[i].hp <= 0) {
+            state.gold += enemies[i].reward;
+            enemies.splice(i, 1);
+            updateHud();
+        }
+    }
+}
+
+function placeOrUpgrade(cellX, cellY) {
+    if (pathTiles.some(tile => tile.x === cellX && tile.y === cellY)) return;
+
+    selectedTowerInstance = null;
+    updateSelectedPanel();
+
+    const existing = towers.find(tower => tower.cellX === cellX && tower.cellY === cellY);
+    if (existing) {
+        selectedTowerInstance = existing;
+        updateSelectedPanel();
+        return;
+    }
+
+    const type = towerTypes[selectedTower];
+    if (!type || state.wave < type.unlockWave) return;
+    if (state.gold < type.cost) return;
+
+    const stats = getTowerStats(selectedTower);
+
+    const position = gridToPixel({ x: cellX, y: cellY });
+    towers.push({
+        cellX,
+        cellY,
+        x: position.x,
+        y: position.y,
+        type: selectedTower,
+        range: stats.range,
+        damage: stats.damage,
+        fireRate: stats.fireRate,
+        splash: stats.splash,
+        slow: stats.slow,
+        color: stats.color,
+        cooldown: 0,
+        level: 1,
+        baseCost: type.cost,
+        invested: type.cost
+    });
+
+    state.gold -= type.cost;
+    selectedTowerInstance = null;
+    updateHud();
+    updateSelectedPanel();
+}
+
+function upgradeSelectedTower() {
+    if (!selectedTowerInstance) return;
+    if (selectedTowerInstance.level >= 3) return;
+    const upgradeCost = Math.floor(selectedTowerInstance.baseCost * (0.8 + 0.2 * (selectedTowerInstance.level - 1)));
+    if (state.gold < upgradeCost) return;
+    state.gold -= upgradeCost;
+    selectedTowerInstance.invested += upgradeCost;
+    selectedTowerInstance.level += 1;
+    selectedTowerInstance.range += 20;
+    selectedTowerInstance.damage += 5;
+    selectedTowerInstance.fireRate = Math.max(150, selectedTowerInstance.fireRate - 60);
+    updateHud();
+    updateSelectedPanel();
+}
+
+function sellSelectedTower() {
+    if (!selectedTowerInstance) return;
+    const refund = Math.floor(selectedTowerInstance.invested * 0.6);
+    state.gold += refund;
+    const index = towers.indexOf(selectedTowerInstance);
+    if (index !== -1) {
+        towers.splice(index, 1);
+    }
+    selectedTowerInstance = null;
+    updateHud();
+    updateSelectedPanel();
+}
+
+function update(delta, time) {
+    if (!state.running || state.paused) return;
+
+    if (!state.waveActive && state.autoWave) {
+        startWave();
+    }
+
+    if (state.waveActive) {
+        spawnTimer += delta;
+        if (spawnQueue.length && spawnTimer > 800) {
+            spawnEnemy(spawnQueue.shift());
+            spawnTimer = 0;
+        }
+
+        if (!spawnQueue.length && !enemies.length) {
+            state.waveActive = false;
+            state.wave += 1;
+            state.gold += 30;
+            const gemBonus = 3 + Math.floor(state.wave / 2);
+            state.gems += gemBonus;
+            state.gemsEarned += gemBonus;
+            updateHud();
+            renderTowerButtons();
+            renderUpgradeList();
+        }
+    }
+
+    updateEnemies(delta);
+    updateTowers(delta, time);
+    updateProjectiles(delta);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+    for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * TILE, 0);
+        ctx.lineTo(x * TILE, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * TILE);
+        ctx.lineTo(canvas.width, y * TILE);
+        ctx.stroke();
+    }
+
+    pathTiles.forEach(tile => {
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(tile.x * TILE, tile.y * TILE, TILE, TILE);
+    });
+
+    towers.forEach(tower => {
+        ctx.fillStyle = tower.color;
+        ctx.beginPath();
+        ctx.arc(tower.x, tower.y, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`L${tower.level}`, tower.x, tower.y + 4);
+    });
+
+    enemies.forEach(enemy => {
+        ctx.fillStyle = enemy.armored ? '#fb7185' : '#f87171';
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        const barWidth = 28;
+        const barHeight = 4;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+        ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 22, barWidth, barHeight);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 22, barWidth * (enemy.hp / enemy.maxHp), barHeight);
+
+        if (enemy.armor > 0) {
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+            ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 16, barWidth, 3);
+            ctx.fillStyle = '#38bdf8';
+            const armorRatio = Math.min(1, enemy.armor / 20);
+            ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 16, barWidth * armorRatio, 3);
+        }
+    });
+
+    projectiles.forEach(proj => {
+        ctx.fillStyle = proj.color;
+        ctx.beginPath();
+        ctx.arc(proj.x, proj.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    if (state.waveActive) {
+        ctx.fillStyle = 'rgba(248, 250, 252, 0.8)';
+        ctx.font = '16px sans-serif';
+        ctx.fillText('Wave in progress', 16, 24);
+    }
+}
+
+function gameLoop(time) {
+    if (!state.running) return;
+
+    const delta = time - lastTime;
+    lastTime = time;
+
+    if (!state.paused) {
+        update(delta, time);
+    }
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+    state.running = false;
+    state.paused = false;
+    upgradeOverlay.classList.add('hidden');
+    gameOverOverlay.classList.remove('hidden');
+    finalScoreEl.textContent = state.wave - 1;
+}
+
+canvas.addEventListener('click', event => {
+    if (!state.running || state.paused) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+    const cellX = Math.floor(x / TILE);
+    const cellY = Math.floor(y / TILE);
+    placeOrUpgrade(cellX, cellY);
+});
+
+startWaveBtn.addEventListener('click', startWave);
+startBtn.addEventListener('click', () => {
+    resetGame();
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+});
+restartBtn.addEventListener('click', () => {
+    resetGame();
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+});
+
+upgradeBtn.addEventListener('click', () => {
+    if (!state.running) return;
+    setPaused(true);
+    renderUpgradeList();
+});
+
+closeUpgradesBtn.addEventListener('click', () => {
+    setPaused(false);
+});
+
+autoWaveToggle.addEventListener('change', () => {
+    state.autoWave = autoWaveToggle.checked;
+});
+
+upgradeTowerBtn.addEventListener('click', upgradeSelectedTower);
+sellTowerBtn.addEventListener('click', sellSelectedTower);
+
+window.addEventListener('keydown', event => {
+    if (event.key === '1') selectTowerByIndex(0);
+    if (event.key === '2') selectTowerByIndex(1);
+    if (event.key === '3') selectTowerByIndex(2);
+    if (event.key === '4') selectTowerByIndex(3);
+    if (event.key === '5') selectTowerByIndex(4);
+});
+
+updateHud();
+renderTowerButtons();
+renderUpgradeList();
+updateSelectedPanel();
+draw();
