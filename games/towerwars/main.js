@@ -8,6 +8,7 @@ const waveEl = document.getElementById('wave-value');
 const startWaveBtn = document.getElementById('start-wave');
 const upgradeBtn = document.getElementById('upgrade-btn');
 const autoWaveToggle = document.getElementById('auto-wave');
+const soundToggle = document.getElementById('sound-toggle');
 const overlay = document.getElementById('overlay');
 const gameOverOverlay = document.getElementById('game-over');
 const upgradeOverlay = document.getElementById('upgrade-overlay');
@@ -60,7 +61,8 @@ const state = {
     lives: 20,
     wave: 1,
     paused: false,
-    autoWave: false
+    autoWave: false,
+    soundOn: true
 };
 
 let selectedTower = 'rapid';
@@ -72,6 +74,64 @@ let spawnQueue = [];
 const towers = [];
 const enemies = [];
 const projectiles = [];
+const explosions = [];
+let audioCtx = null;
+
+function playShotSound(type) {
+    if (!state.soundOn) return;
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    if (type === 'cannon') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    } else if (type === 'slow') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(420, now);
+        osc.frequency.exponentialRampToValueAtTime(260, now + 0.1);
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    } else {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    }
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+}
+
+function playExplosionSound() {
+    if (!state.soundOn) return;
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(90, now + 0.12);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+}
 
 function gridToPixel(cell) {
     return {
@@ -205,6 +265,21 @@ function applyGlobalTowerUpgrade(type) {
     });
 }
 
+function createExplosion(x, y) {
+    playExplosionSound();
+    for (let i = 0; i < 10; i++) {
+        const angle = (Math.PI * 2 * i) / 10;
+        const speed = 40 + Math.random() * 40;
+        explosions.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 300
+        });
+    }
+}
+
 function resetGame() {
     state.running = true;
     state.waveActive = false;
@@ -215,6 +290,7 @@ function resetGame() {
     state.wave = 1;
     state.paused = false;
     state.autoWave = autoWaveToggle.checked;
+    state.soundOn = soundToggle.checked;
     spawnQueue = [];
     spawnTimer = 0;
     towers.length = 0;
@@ -249,18 +325,21 @@ function startWave() {
     const baseSpeed = 40 + state.wave * 2;
     const baseArmor = Math.floor(state.wave / 2);
     const armoredWave = state.wave % 5 === 0;
+    const majorSpike = state.wave % 10 === 0;
 
     spawnQueue = Array.from({ length: enemyCount }, (_, i) => {
         const isArmored = armoredWave && i % 4 === 0;
-        const armor = baseArmor + (isArmored ? 10 : 0);
+        const spikeArmor = majorSpike ? 12 : 0;
+        const spikeSpeed = majorSpike ? 1.35 : 1;
+        const armor = baseArmor + spikeArmor + (isArmored ? 10 : 0);
         const hp = baseHp + i * 2 + armor * 3;
         return {
             hp,
             maxHp: hp,
-            speed: baseSpeed,
+            speed: baseSpeed * spikeSpeed,
             reward: 10 + Math.floor(state.wave / 2),
             armor,
-            armored: isArmored
+            armored: isArmored || majorSpike
         };
     });
 
@@ -337,6 +416,7 @@ function updateTowers(delta, time) {
                 speed: 260,
                 color: tower.color
             });
+            playShotSound(tower.type);
         }
     });
 }
@@ -386,6 +466,7 @@ function applyDamage(projectile, target) {
     for (let i = enemies.length - 1; i >= 0; i--) {
         if (enemies[i].hp <= 0) {
             state.gold += enemies[i].reward;
+            createExplosion(enemies[i].x, enemies[i].y);
             enemies.splice(i, 1);
             updateHud();
         }
@@ -494,6 +575,16 @@ function update(delta, time) {
     updateEnemies(delta);
     updateTowers(delta, time);
     updateProjectiles(delta);
+
+    for (let i = explosions.length - 1; i >= 0; i--) {
+        const particle = explosions[i];
+        particle.x += (particle.vx * delta) / 1000;
+        particle.y += (particle.vy * delta) / 1000;
+        particle.life -= delta;
+        if (particle.life <= 0) {
+            explosions.splice(i, 1);
+        }
+    }
 }
 
 function draw() {
@@ -522,35 +613,72 @@ function draw() {
     });
 
     towers.forEach(tower => {
+        const height = 10 + tower.level * 6;
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.beginPath();
+        ctx.ellipse(tower.x, tower.y + 8, 18, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tower body (3D cylinder effect)
+        const topY = tower.y - height;
         ctx.fillStyle = tower.color;
         ctx.beginPath();
-        ctx.arc(tower.x, tower.y, 16, 0, Math.PI * 2);
+        ctx.ellipse(tower.x, topY, 16, 6, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+
+        ctx.fillRect(tower.x - 16, topY, 32, height);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(tower.x - 14, topY + 2, 6, height - 4);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(tower.x, tower.y, 16, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`L${tower.level}`, tower.x, tower.y + 4);
+        ctx.fillText(`L${tower.level}`, tower.x, topY - 6);
     });
 
     enemies.forEach(enemy => {
+        const height = enemy.armored ? 16 : 12;
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.x, enemy.y + 6, 14, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Enemy body (3D sphere stack)
+        const topY = enemy.y - height;
         ctx.fillStyle = enemy.armored ? '#fb7185' : '#f87171';
         ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, 14, 0, Math.PI * 2);
+        ctx.ellipse(enemy.x, topY, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillRect(enemy.x - 12, topY, 24, height);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(enemy.x - 10, topY + 2, 4, height - 4);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(enemy.x, enemy.y, 12, 5, 0, 0, Math.PI * 2);
         ctx.fill();
 
         const barWidth = 28;
         const barHeight = 4;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-        ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 22, barWidth, barHeight);
+        ctx.fillRect(enemy.x - barWidth / 2, topY - 10, barWidth, barHeight);
         ctx.fillStyle = '#22c55e';
-        ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 22, barWidth * (enemy.hp / enemy.maxHp), barHeight);
+        ctx.fillRect(enemy.x - barWidth / 2, topY - 10, barWidth * (enemy.hp / enemy.maxHp), barHeight);
 
         if (enemy.armor > 0) {
             ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-            ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 16, barWidth, 3);
+            ctx.fillRect(enemy.x - barWidth / 2, topY - 4, barWidth, 3);
             ctx.fillStyle = '#38bdf8';
             const armorRatio = Math.min(1, enemy.armor / 20);
-            ctx.fillRect(enemy.x - barWidth / 2, enemy.y - 16, barWidth * armorRatio, 3);
+            ctx.fillRect(enemy.x - barWidth / 2, topY - 4, barWidth * armorRatio, 3);
         }
     });
 
@@ -561,11 +689,28 @@ function draw() {
         ctx.fill();
     });
 
+    explosions.forEach(particle => {
+        const alpha = Math.max(0, particle.life / 300);
+        ctx.fillStyle = `rgba(251, 146, 60, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     if (state.waveActive) {
         ctx.fillStyle = 'rgba(248, 250, 252, 0.8)';
         ctx.font = '16px sans-serif';
         ctx.fillText('Wave in progress', 16, 24);
     }
+
+    // Board bevel for 3D feel
+    const bevel = 16;
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
+    ctx.fillRect(canvas.width - bevel, 0, bevel, canvas.height);
+    ctx.fillRect(0, canvas.height - bevel, canvas.width, bevel);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2, 2, canvas.width - bevel - 4, canvas.height - bevel - 4);
 }
 
 function gameLoop(time) {
@@ -589,6 +734,7 @@ function endGame() {
     finalScoreEl.textContent = state.wave - 1;
 }
 
+
 canvas.addEventListener('click', event => {
     if (!state.running || state.paused) return;
     const rect = canvas.getBoundingClientRect();
@@ -600,6 +746,7 @@ canvas.addEventListener('click', event => {
     const cellY = Math.floor(y / TILE);
     placeOrUpgrade(cellX, cellY);
 });
+
 
 startWaveBtn.addEventListener('click', startWave);
 startBtn.addEventListener('click', () => {
@@ -625,6 +772,10 @@ closeUpgradesBtn.addEventListener('click', () => {
 
 autoWaveToggle.addEventListener('change', () => {
     state.autoWave = autoWaveToggle.checked;
+});
+
+soundToggle.addEventListener('change', () => {
+    state.soundOn = soundToggle.checked;
 });
 
 upgradeTowerBtn.addEventListener('click', upgradeSelectedTower);
