@@ -38,12 +38,35 @@
                 <div id="overlay" class="overlay">
                     <div class="overlay-content">
                         <h2>Tower Wars (PvE)</h2>
-                        <p>Place towers to stop enemies from reaching the base.</p>
+                        <p>Choose your track difficulty and defend against enemy waves.</p>
+                        <div id="track-selection" class="track-selection">
+                            <div class="track-card" data-track="easy">
+                                <h3>🟢 Spiral Maze</h3>
+                                <p class="difficulty">Easy</p>
+                                <p class="description">Long winding path with plenty of time to build and defend.</p>
+                            </div>
+                            <div class="track-card" data-track="medium">
+                                <h3>🟡 Canyon Road</h3>
+                                <p class="difficulty">Medium</p>
+                                <p class="description">Balanced path with moderate challenge.</p>
+                            </div>
+                            <div class="track-card" data-track="hard">
+                                <h3>🔴 Express Lane</h3>
+                                <p class="difficulty">Hard</p>
+                                <p class="description">Short direct path - enemies arrive fast!</p>
+                            </div>
+                            <div class="track-card" data-track="insane">
+                                <h3>⚫ Death Run</h3>
+                                <p class="difficulty">Insane</p>
+                                <p class="description">Ultra short - barely any time to react!</p>
+                            </div>
+                        </div>
+                        <button id="start-btn" class="btn">Start Game</button>
                         <ul class="controls">
+                            <li><strong>Click a track</strong> to select difficulty</li>
                             <li><strong>Click</strong> to place or upgrade towers</li>
                             <li><strong>1/2/3</strong> to select tower type</li>
                         </ul>
-                        <button id="start-btn" class="btn">Start Game</button>
                     </div>
                 </div>
                 <div id="game-over" class="overlay hidden">

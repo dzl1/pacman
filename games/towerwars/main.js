@@ -28,13 +28,63 @@ const ROWS = 10;
 canvas.width = COLS * TILE;
 canvas.height = ROWS * TILE;
 
-const pathTiles = [
-    { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
-    { x: 3, y: 5 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 },
-    { x: 6, y: 6 }, { x: 6, y: 5 }, { x: 6, y: 4 }, { x: 7, y: 4 },
-    { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 9, y: 3 }, { x: 9, y: 2 },
-    { x: 10, y: 2 }, { x: 11, y: 2 }, { x: 12, y: 2 }, { x: 13, y: 2 }
-];
+// Track definitions with difficulty levels
+const tracks = {
+    // Easy: Long path with multiple roundabouts
+    easy: {
+        name: 'Spiral Maze',
+        difficulty: 'Easy',
+        description: 'Long winding path with plenty of time',
+        tiles: [
+            { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
+            { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 6, y: 4 },
+            { x: 6, y: 3 }, { x: 5, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 3 },
+            { x: 2, y: 3 }, { x: 2, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 1 },
+            { x: 4, y: 1 }, { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 6, y: 2 },
+            { x: 7, y: 2 }, { x: 8, y: 2 }, { x: 9, y: 2 }, { x: 10, y: 2 },
+            { x: 10, y: 3 }, { x: 10, y: 4 }, { x: 10, y: 5 }, { x: 11, y: 5 },
+            { x: 12, y: 5 }, { x: 13, y: 5 }
+        ]
+    },
+    // Medium: Standard path
+    medium: {
+        name: 'Canyon Road',
+        difficulty: 'Medium',
+        description: 'Balanced path with moderate challenge',
+        tiles: [
+            { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
+            { x: 3, y: 5 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 },
+            { x: 6, y: 6 }, { x: 6, y: 5 }, { x: 6, y: 4 }, { x: 7, y: 4 },
+            { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 9, y: 3 }, { x: 9, y: 2 },
+            { x: 10, y: 2 }, { x: 11, y: 2 }, { x: 12, y: 2 }, { x: 13, y: 2 }
+        ]
+    },
+    // Hard: Short, direct path
+    hard: {
+        name: 'Express Lane',
+        difficulty: 'Hard',
+        description: 'Short path - enemies arrive fast!',
+        tiles: [
+            { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
+            { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 },
+            { x: 8, y: 5 }, { x: 9, y: 5 }, { x: 10, y: 5 }, { x: 11, y: 5 },
+            { x: 12, y: 5 }, { x: 13, y: 5 }
+        ]
+    },
+    // Insane: Ultra short, straight line
+    insane: {
+        name: 'Death Run',
+        difficulty: 'Insane',
+        description: 'Enemies barely slow down - very little time!',
+        tiles: [
+            { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
+            { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 }
+        ]
+    }
+};
+
+let pathTiles = tracks.medium.tiles;
+let currentTrack = 'medium';
 
 const towerTypes = {
     rapid: { cost: 50, range: 110, fireRate: 300, damage: 8, color: '#38bdf8', unlockWave: 1 },
@@ -784,15 +834,49 @@ canvas.addEventListener('click', event => {
 
 
 startWaveBtn.addEventListener('click', startWave);
+
+// Track selection
+const trackSelection = document.getElementById('track-selection');
+const trackCards = document.querySelectorAll('.track-card');
+
+trackCards.forEach(card => {
+    card.addEventListener('click', () => {
+        const track = card.getAttribute('data-track');
+        currentTrack = track;
+        pathTiles = tracks[track].tiles;
+        
+        // Update UI
+        trackCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        
+        // Show play button or proceed if overlay should close
+        const overlay = document.getElementById('overlay');
+        if (overlay && !overlay.classList.contains('hidden')) {
+            // Add a start button dynamically or use existing one
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn && startBtn.style.display === 'none') {
+                startBtn.style.display = 'block';
+            }
+        }
+    });
+});
+
 startBtn.addEventListener('click', () => {
+    if (!currentTrack) {
+        // No track selected, select medium as default
+        currentTrack = 'medium';
+        pathTiles = tracks['medium'].tiles;
+    }
     resetGame();
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 });
 restartBtn.addEventListener('click', () => {
-    resetGame();
-    lastTime = performance.now();
-    requestAnimationFrame(gameLoop);
+    // Reset to track selection
+    overlay.classList.remove('hidden');
+    trackCards.forEach(c => c.classList.remove('selected'));
+    const track = document.querySelector(`[data-track="${currentTrack}"]`);
+    if (track) track.classList.add('selected');
 });
 
 upgradeBtn.addEventListener('click', () => {
@@ -828,4 +912,11 @@ updateHud();
 renderTowerButtons();
 renderUpgradeList();
 updateSelectedPanel();
+
+// Pre-select medium difficulty on load
+const mediumCard = document.querySelector('[data-track="medium"]');
+if (mediumCard) {
+    mediumCard.classList.add('selected');
+}
+
 draw();
