@@ -1,4 +1,8 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false
+  "routes": [
+    {
+      "src": "/games/([^/]+)/?",
+      "dest": "/games/$1/index.html"
+    }
+  ]
 }
