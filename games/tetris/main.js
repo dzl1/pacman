@@ -21,11 +21,14 @@ function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const scale = window.devicePixelRatio || 1;
     const boardWidth = rect.width;
+    const boardHeight = rect.height;
 
-    BLOCK_SIZE = Math.max(18, Math.floor(boardWidth / COLS));
-    const boardHeight = ROWS * BLOCK_SIZE;
+    const sizeByWidth = Math.floor(boardWidth / COLS);
+    const sizeByHeight = Math.floor(boardHeight / ROWS);
+    BLOCK_SIZE = Math.max(18, Math.min(sizeByWidth, sizeByHeight));
+    const finalHeight = ROWS * BLOCK_SIZE;
 
-    canvas.style.height = `${boardHeight}px`;
+    canvas.style.height = `${finalHeight}px`;
     canvas.width = Math.floor(COLS * BLOCK_SIZE * scale);
     canvas.height = Math.floor(ROWS * BLOCK_SIZE * scale);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);

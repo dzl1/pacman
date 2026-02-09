@@ -21,33 +21,6 @@
 
         <div class="game-layout">
             <div class="game-area">
-                <div class="top-hud">
-                    <div class="info-panel">
-                        <h3>Score</h3>
-                        <div class="score-value" id="score-value">0</div>
-                    </div>
-
-                    <div class="info-panel">
-                        <h3>Lines</h3>
-                        <div class="score-value" id="lines-value">0</div>
-                    </div>
-
-                    <div class="info-panel">
-                        <h3>Level</h3>
-                        <div class="score-value" id="level-value">1</div>
-                    </div>
-
-                    <div class="info-panel">
-                        <h3>Best</h3>
-                        <div class="score-value" id="best-value">0</div>
-                    </div>
-
-                    <div class="info-panel next-panel">
-                        <h3>Next</h3>
-                        <canvas id="next-canvas"></canvas>
-                    </div>
-                </div>
-
                 <canvas id="game-canvas"></canvas>
 
                 <div class="mobile-controls" aria-label="Tetris controls">
@@ -78,6 +51,33 @@
                         <p class="final-score">Score: <span id="final-score">0</span></p>
                         <button id="restart-btn" class="btn">Play Again</button>
                     </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="info-panel">
+                    <h3>Score</h3>
+                    <div class="score-value" id="score-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Lines</h3>
+                    <div class="score-value" id="lines-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Level</h3>
+                    <div class="score-value" id="level-value">1</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Best Score</h3>
+                    <div class="score-value" id="best-value">0</div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Next</h3>
+                    <canvas id="next-canvas"></canvas>
                 </div>
             </div>
         </div>
