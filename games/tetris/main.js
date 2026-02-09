@@ -15,12 +15,27 @@ const restartBtn = document.getElementById('restart-btn');
 
 const COLS = 10;
 const ROWS = 20;
-const BLOCK_SIZE = 30;
+let BLOCK_SIZE = 30;
 
-canvas.width = COLS * BLOCK_SIZE;
-canvas.height = ROWS * BLOCK_SIZE;
-nextCanvas.width = 120;
-nextCanvas.height = 120;
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const scale = window.devicePixelRatio || 1;
+    const boardWidth = rect.width;
+
+    BLOCK_SIZE = Math.max(18, Math.floor(boardWidth / COLS));
+    const boardHeight = ROWS * BLOCK_SIZE;
+
+    canvas.style.height = `${boardHeight}px`;
+    canvas.width = Math.floor(COLS * BLOCK_SIZE * scale);
+    canvas.height = Math.floor(ROWS * BLOCK_SIZE * scale);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    nextCanvas.width = Math.floor(BLOCK_SIZE * 4 * scale);
+    nextCanvas.height = Math.floor(BLOCK_SIZE * 4 * scale);
+    nextCanvas.style.width = `${BLOCK_SIZE * 4}px`;
+    nextCanvas.style.height = `${BLOCK_SIZE * 4}px`;
+    nextCtx.setTransform(scale, 0, 0, scale, 0, 0);
+}
 
 const SHAPES = {
     I: [[1, 1, 1, 1]],
@@ -356,7 +371,13 @@ controlButtons.forEach(button => {
 });
 
 bestEl.textContent = state.best;
+resizeCanvas();
 draw();
+
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    draw();
+});
 
 // Mobile orientation helper
 const orientationOverlay = document.getElementById('orientation-overlay');
