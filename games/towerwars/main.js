@@ -30,11 +30,12 @@ canvas.height = ROWS * TILE;
 
 // Track definitions with difficulty levels
 const tracks = {
-    // Easy: Long path with multiple roundabouts
-    easy: {
+    // TIER 1 - Unlocked (Waves 1+)
+    easy_spiral: {
         name: 'Spiral Maze',
         difficulty: 'Easy',
-        description: 'Long winding path with plenty of time',
+        description: 'Long winding path',
+        requiredWaves: 0,
         tiles: [
             { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
             { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 6, y: 4 },
@@ -46,11 +47,11 @@ const tracks = {
             { x: 12, y: 5 }, { x: 13, y: 5 }
         ]
     },
-    // Medium: Standard path
-    medium: {
+    canyon_road: {
         name: 'Canyon Road',
         difficulty: 'Medium',
-        description: 'Balanced path with moderate challenge',
+        description: 'Balanced path',
+        requiredWaves: 0,
         tiles: [
             { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
             { x: 3, y: 5 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 },
@@ -59,11 +60,11 @@ const tracks = {
             { x: 10, y: 2 }, { x: 11, y: 2 }, { x: 12, y: 2 }, { x: 13, y: 2 }
         ]
     },
-    // Hard: Short, direct path
-    hard: {
+    express_lane: {
         name: 'Express Lane',
         difficulty: 'Hard',
-        description: 'Short path - enemies arrive fast!',
+        description: 'Short direct path',
+        requiredWaves: 0,
         tiles: [
             { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
             { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 },
@@ -71,20 +72,163 @@ const tracks = {
             { x: 12, y: 5 }, { x: 13, y: 5 }
         ]
     },
-    // Insane: Ultra short, straight line
-    insane: {
+    death_run: {
         name: 'Death Run',
         difficulty: 'Insane',
-        description: 'Enemies barely slow down - very little time!',
+        description: 'Ultra short straight',
+        requiredWaves: 0,
         tiles: [
             { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
             { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 7, y: 5 }
         ]
+    },
+    zigzag_valley: {
+        name: 'Zigzag Valley',
+        difficulty: 'Medium',
+        description: 'Sharp turns',
+        requiredWaves: 0,
+        tiles: [
+            { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 2, y: 5 },
+            { x: 2, y: 6 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 4, y: 5 },
+            { x: 4, y: 4 }, { x: 5, y: 4 }, { x: 6, y: 4 }, { x: 6, y: 5 },
+            { x: 6, y: 6 }, { x: 7, y: 6 }, { x: 8, y: 6 }, { x: 8, y: 5 },
+            { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 10, y: 4 }, { x: 10, y: 5 },
+            { x: 10, y: 6 }, { x: 11, y: 6 }, { x: 12, y: 6 }, { x: 13, y: 6 }
+        ]
+    },
+    loop_track: {
+        name: 'Loop Track',
+        difficulty: 'Medium',
+        description: 'Circular path',
+        requiredWaves: 0,
+        tiles: [
+            { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 5, y: 2 }, { x: 6, y: 2 },
+            { x: 7, y: 2 }, { x: 8, y: 2 }, { x: 9, y: 2 }, { x: 9, y: 3 },
+            { x: 9, y: 4 }, { x: 9, y: 5 }, { x: 9, y: 6 }, { x: 8, y: 6 },
+            { x: 7, y: 6 }, { x: 6, y: 6 }, { x: 5, y: 6 }, { x: 4, y: 6 },
+            { x: 3, y: 6 }, { x: 3, y: 5 }, { x: 3, y: 4 }, { x: 3, y: 3 },
+            { x: 2, y: 3 }, { x: 1, y: 3 }, { x: 0, y: 3 }, { x: 0, y: 2 },
+            { x: 1, y: 2 }, { x: 2, y: 2 }
+        ]
+    },
+    serpent_path: {
+        name: 'Serpent Path',
+        difficulty: 'Easy',
+        description: 'S-shaped route',
+        requiredWaves: 0,
+        tiles: [
+            { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 },
+            { x: 4, y: 2 }, { x: 5, y: 2 }, { x: 6, y: 2 }, { x: 7, y: 2 },
+            { x: 8, y: 2 }, { x: 8, y: 3 }, { x: 8, y: 4 }, { x: 8, y: 5 },
+            { x: 7, y: 5 }, { x: 6, y: 5 }, { x: 5, y: 5 }, { x: 4, y: 5 },
+            { x: 3, y: 5 }, { x: 2, y: 5 }, { x: 1, y: 5 }, { x: 0, y: 5 },
+            { x: 0, y: 6 }, { x: 1, y: 6 }, { x: 2, y: 6 }, { x: 3, y: 6 },
+            { x: 4, y: 6 }, { x: 5, y: 6 }, { x: 6, y: 6 }, { x: 7, y: 6 },
+            { x: 8, y: 6 }, { x: 9, y: 6 }, { x: 10, y: 6 }, { x: 11, y: 6 },
+            { x: 12, y: 6 }, { x: 13, y: 6 }
+        ]
+    },
+    double_helix: {
+        name: 'Double Helix',
+        difficulty: 'Hard',
+        description: 'Twisted path',
+        requiredWaves: 0,
+        tiles: [
+            { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 1, y: 4 }, { x: 1, y: 3 },
+            { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 3, y: 5 },
+            { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 5, y: 4 }, { x: 5, y: 3 },
+            { x: 6, y: 3 }, { x: 7, y: 3 }, { x: 7, y: 4 }, { x: 7, y: 5 },
+            { x: 8, y: 5 }, { x: 9, y: 5 }, { x: 9, y: 4 }, { x: 9, y: 3 },
+            { x: 10, y: 3 }, { x: 11, y: 3 }, { x: 11, y: 4 }, { x: 11, y: 5 },
+            { x: 12, y: 5 }, { x: 13, y: 5 }
+        ]
+    },
+    maze_expert: {
+        name: 'Maze Expert',
+        difficulty: 'Hard',
+        description: 'Complex maze',
+        requiredWaves: 0,
+        tiles: [
+            { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 2, y: 4 },
+            { x: 2, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 },
+            { x: 5, y: 2 }, { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 5, y: 5 },
+            { x: 6, y: 5 }, { x: 7, y: 5 }, { x: 7, y: 4 }, { x: 7, y: 3 },
+            { x: 7, y: 2 }, { x: 8, y: 2 }, { x: 9, y: 2 }, { x: 10, y: 2 },
+            { x: 10, y: 3 }, { x: 10, y: 4 }, { x: 10, y: 5 }, { x: 11, y: 5 },
+            { x: 12, y: 5 }, { x: 13, y: 5 }
+        ]
+    },
+    spiral_descent: {
+        name: 'Spiral Descent',
+        difficulty: 'Medium',
+        description: 'Descending spiral',
+        requiredWaves: 0,
+        tiles: [
+            { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 },
+            { x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 8, y: 2 },
+            { x: 8, y: 3 }, { x: 8, y: 4 }, { x: 8, y: 5 }, { x: 8, y: 6 },
+            { x: 7, y: 6 }, { x: 6, y: 6 }, { x: 5, y: 6 }, { x: 4, y: 6 },
+            { x: 3, y: 6 }, { x: 2, y: 6 }, { x: 1, y: 6 }, { x: 1, y: 5 },
+            { x: 1, y: 4 }, { x: 1, y: 3 }, { x: 1, y: 2 }, { x: 2, y: 2 },
+            { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 5, y: 2 }, { x: 6, y: 2 },
+            { x: 7, y: 2 }, { x: 11, y: 5 }, { x: 12, y: 5 }, { x: 13, y: 5 }
+        ]
     }
 };
 
-let pathTiles = tracks.medium.tiles;
-let currentTrack = 'medium';
+// Add 50 locked tracks
+const lockedTracks = [
+    // Waves 5+
+    { waves: 5, count: 5, offset: 0 },
+    // Waves 10+
+    { waves: 10, count: 5, offset: 5 },
+    // Waves 15+
+    { waves: 15, count: 5, offset: 10 },
+    // Waves 20+
+    { waves: 20, count: 5, offset: 15 },
+    // Waves 25+
+    { waves: 25, count: 5, offset: 20 },
+    // Waves 30+
+    { waves: 30, count: 5, offset: 25 },
+    // Waves 35+
+    { waves: 35, count: 5, offset: 30 },
+    // Waves 40+
+    { waves: 40, count: 5, offset: 35 },
+    // Waves 45+
+    { waves: 45, count: 5, offset: 40 },
+    // Waves 50+
+    { waves: 50, count: 10, offset: 45 }
+];
+
+// Generate locked tracks
+let trackId = 10;
+lockedTracks.forEach(tier => {
+    for (let i = 0; i < tier.count; i++) {
+        const id = `locked_${trackId}`;
+        const tileCount = 15 + Math.random() * 20;
+        const tiles = [];
+        let x = 0, y = 5;
+        
+        for (let j = 0; j < tileCount; j++) {
+            tiles.push({ x, y });
+            if (Math.random() > 0.7 && y > 2) y--;
+            else if (Math.random() > 0.7 && y < 7) y++;
+            if (x < 13) x++;
+        }
+        
+        tracks[id] = {
+            name: `Challenge ${trackId}`,
+            difficulty: tier.waves === 5 ? 'Hard' : tier.waves < 20 ? 'Insane' : 'Expert',
+            description: `Unlock at Wave ${tier.waves}`,
+            requiredWaves: tier.waves,
+            tiles: tiles
+        };
+        trackId++;
+    }
+});
+
+let pathTiles = tracks.canyon_road.tiles;
+let currentTrack = 'canyon_road';
 
 const towerTypes = {
     rapid: { cost: 50, range: 110, fireRate: 300, damage: 8, color: '#38bdf8', unlockWave: 1 },
@@ -835,48 +979,106 @@ canvas.addEventListener('click', event => {
 
 startWaveBtn.addEventListener('click', startWave);
 
+// Helper function to draw track mini-graphic
+function createTrackSVG(trackKey) {
+    const track = tracks[trackKey];
+    const width = 128, height = 80;
+    const scale = 8;
+    
+    let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+    svg += `<rect width="${width}" height="${height}" fill="rgba(0,0,0,0.2)" rx="4"/>`;
+    
+    if (track.tiles && track.tiles.length > 0) {
+        // Draw path
+        svg += `<g stroke="#a5b4fc" stroke-width="2" fill="none" stroke-linecap="round">`;
+        for (let i = 0; i < track.tiles.length - 1; i++) {
+            const from = track.tiles[i];
+            const to = track.tiles[i + 1];
+            const x1 = (from.x / 14) * width;
+            const y1 = (from.y / 10) * height;
+            const x2 = (to.x / 14) * width;
+            const y2 = (to.y / 10) * height;
+            svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+        }
+        svg += `</g>`;
+        
+        // Draw start
+        const start = track.tiles[0];
+        const sx = (start.x / 14) * width;
+        const sy = (start.y / 10) * height;
+        svg += `<circle cx="${sx}" cy="${sy}" r="4" fill="#22c55e"/>`;
+        
+        // Draw end
+        const end = track.tiles[track.tiles.length - 1];
+        const ex = (end.x / 14) * width;
+        const ey = (end.y / 10) * height;
+        svg += `<circle cx="${ex}" cy="${ey}" r="4" fill="#ef4444"/>`;
+    }
+    
+    svg += `</svg>`;
+    return svg;
+}
+
 // Track selection
 const trackSelection = document.getElementById('track-selection');
-const trackCards = document.querySelectorAll('.track-card');
+let highestWaveAchieved = 0; // Will be updated from state
 
-trackCards.forEach(card => {
-    card.addEventListener('click', () => {
-        const track = card.getAttribute('data-track');
-        currentTrack = track;
-        pathTiles = tracks[track].tiles;
+function renderTrackSelection() {
+    trackSelection.innerHTML = '';
+    const trackKeys = Object.keys(tracks);
+    
+    trackKeys.forEach(trackKey => {
+        const track = tracks[trackKey];
+        const isLocked = track.requiredWaves > highestWaveAchieved;
         
-        // Update UI
-        trackCards.forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
+        const card = document.createElement('div');
+        card.className = `track-card ${isLocked ? 'locked' : ''}`;
+        card.dataset.track = trackKey;
         
-        // Show play button or proceed if overlay should close
-        const overlay = document.getElementById('overlay');
-        if (overlay && !overlay.classList.contains('hidden')) {
-            // Add a start button dynamically or use existing one
-            const startBtn = document.getElementById('start-btn');
-            if (startBtn && startBtn.style.display === 'none') {
-                startBtn.style.display = 'block';
-            }
+        const svg = createTrackSVG(trackKey);
+        card.innerHTML = `
+            ${svg}
+            <h3>${track.name}</h3>
+            <p class="difficulty">${track.difficulty}</p>
+            <p class="description">${isLocked ? `🔒 Wave ${track.requiredWaves}+` : `${track.tiles.length} tiles`}</p>
+        `;
+        
+        if (!isLocked) {
+            card.addEventListener('click', () => {
+                currentTrack = trackKey;
+                pathTiles = track.tiles;
+                
+                document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                document.getElementById('start-btn').disabled = false;
+            });
         }
+        
+        trackSelection.appendChild(card);
     });
-});
+}
 
 startBtn.addEventListener('click', () => {
     if (!currentTrack) {
-        // No track selected, select medium as default
-        currentTrack = 'medium';
-        pathTiles = tracks['medium'].tiles;
+        currentTrack = 'canyon_road';
+        pathTiles = tracks['canyon_road'].tiles;
     }
     resetGame();
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 });
+
 restartBtn.addEventListener('click', () => {
-    // Reset to track selection
+    highestWaveAchieved = Math.max(highestWaveAchieved, state.wave - 1);
     overlay.classList.remove('hidden');
-    trackCards.forEach(c => c.classList.remove('selected'));
+    renderTrackSelection();
+    
+    // Reselect previous track if still unlocked
     const track = document.querySelector(`[data-track="${currentTrack}"]`);
-    if (track) track.classList.add('selected');
+    if (track && !track.classList.contains('locked')) {
+        track.click();
+    }
 });
 
 upgradeBtn.addEventListener('click', () => {
@@ -913,10 +1115,7 @@ renderTowerButtons();
 renderUpgradeList();
 updateSelectedPanel();
 
-// Pre-select medium difficulty on load
-const mediumCard = document.querySelector('[data-track="medium"]');
-if (mediumCard) {
-    mediumCard.classList.add('selected');
-}
+// Initialize track selection
+renderTrackSelection();
 
 draw();
