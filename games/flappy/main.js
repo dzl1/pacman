@@ -19,7 +19,7 @@ const state = {
 const bird = {
     x: 0,
     y: 0,
-    radius: 14,
+    radius: 40,
     velocity: 0,
     rotation: 0,
     targetRotation: 0
@@ -40,6 +40,7 @@ const pipeConfig = {
 
 const fruits = [];
 const bullets = [];
+const birdTrail = [];
 const fruitTypes = {
     shield: { color: '#ec4899', emoji: '🛡️', duration: 600 },
     bullets: { color: '#f59e0b', emoji: '💥', duration: 600 }
@@ -79,6 +80,7 @@ function resetGame() {
     pipes.length = 0;
     fruits.length = 0;
     bullets.length = 0;
+    birdTrail.length = 0;
     powerups.shield.active = false;
     powerups.bullets.active = false;
 
@@ -146,8 +148,13 @@ function update() {
     bird.y += bird.velocity;
 
     const bounds = canvas.getBoundingClientRect();
+    const birdHalf = bird.radius * 0.5;
+    const birdLeft = bird.x - birdHalf;
+    const birdRight = bird.x + birdHalf;
+    const birdTop = bird.y - birdHalf;
+    const birdBottom = bird.y + birdHalf;
 
-    if (bird.y + bird.radius >= bounds.height || bird.y - bird.radius <= 0) {
+    if (birdBottom >= bounds.height || birdTop <= 0) {
         endGame();
     }
 
@@ -157,9 +164,9 @@ function update() {
         const topPipeBottom = pipe.gapTop;
         const bottomPipeTop = pipe.gapTop + pipeConfig.gap;
 
-        const hitsPipe = bird.x + bird.radius > pipe.x &&
-            bird.x - bird.radius < pipe.x + pipeConfig.width &&
-            (bird.y - bird.radius < topPipeBottom || bird.y + bird.radius > bottomPipeTop);
+        const hitsPipe = birdRight > pipe.x &&
+            birdLeft < pipe.x + pipeConfig.width &&
+            (birdTop < topPipeBottom || birdBottom > bottomPipeTop);
 
         if (hitsPipe && !powerups.shield.active) {
             endGame();
@@ -190,7 +197,7 @@ function update() {
         fruit.x -= pipeConfig.speed;
 
         const distance = Math.hypot(bird.x - fruit.x, bird.y - fruit.y);
-        if (distance < bird.radius + fruit.radius && !fruit.collected) {
+        if (distance < birdHalf + fruit.radius && !fruit.collected) {
             fruit.collected = true;
             activatePowerup(fruit.type);
         }
@@ -207,6 +214,30 @@ function update() {
     bullets.forEach(bullet => {
         bullet.x += bullet.speed;
     });
+
+    // Spawn bird trail particles
+    birdTrail.push({
+        x: bird.x - bird.radius * 0.75,
+        y: bird.y,
+        baseY: bird.y,
+        vx: -0.9,
+        vy: 0,
+        life: 16,
+        size: Math.max(4, bird.radius * 0.16)
+    });
+
+    // Update bird trail particles
+    for (let i = birdTrail.length - 1; i >= 0; i--) {
+        const p = birdTrail[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        // Ease toward the original y to avoid vertical jitter
+        p.y += (p.baseY - p.y) * 0.1;
+        p.life -= 1;
+        if (p.life <= 0) {
+            birdTrail.splice(i, 1);
+        }
+    }
 
     // Check bullet-pipe collisions
     for (let i = bullets.length - 1; i >= 0; i--) {
@@ -332,18 +363,26 @@ function draw() {
     explosionParticles.length = 0;
     activeParticles.forEach(p => explosionParticles.push(p));
 
+    // Draw bird trail particles
+    birdTrail.forEach(particle => {
+        const alpha = Math.max(0, particle.life / 16) * 0.5;
+        ctx.fillStyle = `rgba(226, 232, 240, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     // Draw bird sprite with flying/dropping frames
     ctx.save();
     ctx.translate(bird.x, bird.y);
     ctx.rotate(bird.rotation);
-    ctx.scale(-1, 1);
 
     if (birdImage.complete && birdImage.naturalWidth > 0) {
         const frameWidth = birdImage.naturalWidth / 2;
         const frameHeight = birdImage.naturalHeight;
         const isRising = bird.velocity < 0;
         const frameIndex = isRising ? 0 : 1;
-        const drawSize = bird.radius * 2.6;
+        const drawSize = bird.radius * 3.2;
         ctx.drawImage(
             birdImage,
             frameIndex * frameWidth,
