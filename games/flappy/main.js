@@ -54,7 +54,10 @@ let frameCount = 0;
 let groundOffset = 0;
 
 const groundImage = new Image();
-groundImage.src = 'images/ground.png';
+groundImage.src = new URL('./images/ground.png', import.meta.url).href;
+
+const birdImage = new Image();
+birdImage.src = new URL('./images/bird.png', import.meta.url).href;
 
 function resizeCanvas() {
     const { width, height } = canvas.getBoundingClientRect();
@@ -329,14 +332,36 @@ function draw() {
     explosionParticles.length = 0;
     activeParticles.forEach(p => explosionParticles.push(p));
 
-    // Draw bird emoji with rotation
+    // Draw bird sprite with flying/dropping frames
     ctx.save();
     ctx.translate(bird.x, bird.y);
     ctx.rotate(bird.rotation);
-    ctx.font = `${bird.radius * 2.2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🐦', 0, 0);
+    ctx.scale(-1, 1);
+
+    if (birdImage.complete && birdImage.naturalWidth > 0) {
+        const frameWidth = birdImage.naturalWidth / 2;
+        const frameHeight = birdImage.naturalHeight;
+        const isRising = bird.velocity < 0;
+        const frameIndex = isRising ? 0 : 1;
+        const drawSize = bird.radius * 2.6;
+        ctx.drawImage(
+            birdImage,
+            frameIndex * frameWidth,
+            0,
+            frameWidth,
+            frameHeight,
+            -drawSize / 2,
+            -drawSize / 2,
+            drawSize,
+            drawSize
+        );
+    } else {
+        ctx.font = `${bird.radius * 2.2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🐦', 0, 0);
+    }
+
     ctx.restore();
 
     // Draw shield indicator
