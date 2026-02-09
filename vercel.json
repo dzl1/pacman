@@ -1,0 +1,25 @@
+{
+  "buildCommand": "echo 'Static site - no build needed'",
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/games/:game/",
+      "destination": "/games/:game/index.html"
+    },
+    {
+      "source": "/games/:game",
+      "destination": "/games/:game/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
