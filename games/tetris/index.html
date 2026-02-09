@@ -16,13 +16,20 @@
     </div>
     <div class="game-container">
         <div class="game-header">
-            <a href="../../index.html" class="back-link">← Back to Games</a>
-            <h1>Tetris</h1>
+            <a href="../../index.html" class="back-link" aria-label="Back to Games">←</a>
         </div>
 
         <div class="game-layout">
             <div class="game-area">
                 <canvas id="game-canvas"></canvas>
+
+                <div class="mobile-controls" aria-label="Tetris controls">
+                    <button class="control-btn" data-action="left">◀</button>
+                    <button class="control-btn" data-action="rotate">⟳</button>
+                    <button class="control-btn" data-action="right">▶</button>
+                    <button class="control-btn" data-action="down">▼</button>
+                    <button class="control-btn" data-action="drop">⤓</button>
+                </div>
                 
                 <div id="overlay" class="overlay">
                     <div class="overlay-content">

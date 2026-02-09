@@ -340,6 +340,21 @@ window.addEventListener('keydown', event => {
 startBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
 
+// Mobile controls
+const controlButtons = document.querySelectorAll('.control-btn');
+controlButtons.forEach(button => {
+    button.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        if (!state.running) return;
+        const action = button.dataset.action;
+        if (action === 'left') move(-1);
+        if (action === 'right') move(1);
+        if (action === 'down') drop();
+        if (action === 'rotate') rotate();
+        if (action === 'drop') hardDrop();
+    });
+});
+
 bestEl.textContent = state.best;
 draw();
 
