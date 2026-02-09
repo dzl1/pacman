@@ -329,21 +329,14 @@ function draw() {
     explosionParticles.length = 0;
     activeParticles.forEach(p => explosionParticles.push(p));
 
-    // Draw bird with rotation
+    // Draw bird emoji with rotation
     ctx.save();
     ctx.translate(bird.x, bird.y);
     ctx.rotate(bird.rotation);
-    
-    ctx.fillStyle = '#facc15';
-    ctx.beginPath();
-    ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    ctx.arc(4, -4, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
+    ctx.font = `${bird.radius * 2.2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🐦', 0, 0);
     ctx.restore();
 
     // Draw shield indicator
