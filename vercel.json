@@ -1,14 +1,12 @@
 {
-  "buildCommand": "echo 'Static site - no build needed'",
-  "outputDirectory": ".",
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/games/:game/",
-      "destination": "/games/:game/index.html"
+      "source": "/games/(.*)/",
+      "destination": "/games/$1/index.html"
     },
     {
-      "source": "/games/:game",
-      "destination": "/games/:game/index.html"
+      "source": "/games/(.*)",
+      "destination": "/games/$1/index.html"
     }
   ],
   "headers": [
