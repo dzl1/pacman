@@ -336,7 +336,15 @@ function gridToPixel(cell) {
     };
 }
 
-const pathPoints = pathTiles.map(gridToPixel);
+let pathPoints = pathTiles.map(gridToPixel);
+
+function setTrack(trackKey) {
+    const track = tracks[trackKey];
+    if (!track) return;
+    currentTrack = trackKey;
+    pathTiles = track.tiles;
+    pathPoints = pathTiles.map(gridToPixel);
+}
 
 function getTowerStats(type) {
     const base = towerTypes[type];
@@ -1045,8 +1053,7 @@ function renderTrackSelection() {
         
         if (!isLocked) {
             card.addEventListener('click', () => {
-                currentTrack = trackKey;
-                pathTiles = track.tiles;
+                setTrack(trackKey);
                 
                 document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
@@ -1061,8 +1068,7 @@ function renderTrackSelection() {
 
 startBtn.addEventListener('click', () => {
     if (!currentTrack) {
-        currentTrack = 'canyon_road';
-        pathTiles = tracks['canyon_road'].tiles;
+        setTrack('canyon_road');
     }
     resetGame();
     lastTime = performance.now();
