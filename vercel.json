@@ -1,8 +1,12 @@
 {
-  "routes": [
-    {
-      "src": "/games/([^/]+)/?",
-      "dest": "/games/$1/index.html"
-    }
+  "rewrites": [
+    { "source": "/games/pacman", "destination": "/games/pacman/index.html" },
+    { "source": "/games/pacman/", "destination": "/games/pacman/index.html" },
+    { "source": "/games/flappy", "destination": "/games/flappy/index.html" },
+    { "source": "/games/flappy/", "destination": "/games/flappy/index.html" },
+    { "source": "/games/tetris", "destination": "/games/tetris/index.html" },
+    { "source": "/games/tetris/", "destination": "/games/tetris/index.html" },
+    { "source": "/games/towerwars", "destination": "/games/towerwars/index.html" },
+    { "source": "/games/towerwars/", "destination": "/games/towerwars/index.html" }
   ]
 }
