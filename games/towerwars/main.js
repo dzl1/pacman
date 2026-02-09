@@ -75,6 +75,8 @@ const towers = [];
 const enemies = [];
 const projectiles = [];
 const explosions = [];
+const tankImage = new Image();
+tankImage.src = 'images/tank.png';
 let audioCtx = null;
 
 function playShotSound(type) {
@@ -358,6 +360,7 @@ function spawnEnemy(template) {
         armor: template.armor || 0,
         armored: template.armored || false,
         pathIndex: 0,
+        angle: 0,
         slowUntil: 0,
         slowFactor: 1
     });
@@ -371,6 +374,9 @@ function updateEnemies(delta) {
         const dx = target.x - enemy.x;
         const dy = target.y - enemy.y;
         const distance = Math.hypot(dx, dy);
+        if (distance > 0) {
+            enemy.angle = Math.atan2(dy, dx);
+        }
         const speedMultiplier = enemy.slowUntil > performance.now() ? enemy.slowFactor : 1;
         const moveDistance = (enemy.speed * speedMultiplier * delta) / 1000;
 
@@ -643,28 +649,26 @@ function draw() {
     });
 
     enemies.forEach(enemy => {
-        const height = enemy.armored ? 16 : 12;
+        const tankWidth = enemy.armored ? 34 : 28;
+        const tankHeight = enemy.armored ? 24 : 20;
+        const topY = enemy.y - tankHeight / 2;
+
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.beginPath();
-        ctx.ellipse(enemy.x, enemy.y + 6, 14, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(enemy.x, enemy.y + 8, tankWidth * 0.45, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Enemy body (3D sphere stack)
-        const topY = enemy.y - height;
-        ctx.fillStyle = enemy.armored ? '#fb7185' : '#f87171';
-        ctx.beginPath();
-        ctx.ellipse(enemy.x, topY, 12, 5, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillRect(enemy.x - 12, topY, 24, height);
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.fillRect(enemy.x - 10, topY + 2, 4, height - 4);
-
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath();
-        ctx.ellipse(enemy.x, enemy.y, 12, 5, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (tankImage.complete && tankImage.naturalWidth > 0) {
+            ctx.save();
+            ctx.translate(enemy.x, enemy.y);
+            ctx.rotate(enemy.angle);
+            ctx.drawImage(tankImage, -tankWidth / 2, -tankHeight / 2, tankWidth, tankHeight);
+            ctx.restore();
+        } else {
+            ctx.fillStyle = enemy.armored ? '#fb7185' : '#f87171';
+            ctx.fillRect(enemy.x - tankWidth / 2, enemy.y - tankHeight / 2, tankWidth, tankHeight);
+        }
 
         const barWidth = 28;
         const barHeight = 4;
