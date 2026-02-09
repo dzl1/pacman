@@ -270,7 +270,7 @@ const enemies = [];
 const projectiles = [];
 const explosions = [];
 const tankImage = new Image();
-tankImage.src = 'images/tank.png';
+tankImage.src = new URL('./images/tank.png', import.meta.url).href;
 let audioCtx = null;
 
 function playShotSound(type) {
