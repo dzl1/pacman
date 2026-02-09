@@ -778,3 +778,35 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Mobile orientation helper
+const orientationOverlay = document.getElementById('orientation-overlay');
+const rotateBtn = document.getElementById('rotate-btn');
+
+function updateOrientationOverlay() {
+    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (isPortrait && isCoarsePointer) {
+        orientationOverlay.classList.remove('hidden');
+    } else {
+        orientationOverlay.classList.add('hidden');
+    }
+}
+
+async function requestLandscape() {
+    try {
+        if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+        }
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape');
+        }
+    } catch (err) {
+        // Ignore if not supported
+    }
+}
+
+rotateBtn?.addEventListener('click', requestLandscape);
+window.addEventListener('resize', updateOrientationOverlay);
+window.addEventListener('orientationchange', updateOrientationOverlay);
+updateOrientationOverlay();

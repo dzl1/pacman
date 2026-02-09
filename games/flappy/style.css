@@ -62,6 +62,10 @@ body {
     display: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .overlay h1 {
     font-size: 40px;
 }
@@ -86,6 +90,47 @@ button {
 
 button:hover {
     transform: translateY(-2px);
+}
+
+.orientation-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.92);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.orientation-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 320px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.orientation-card h2 {
+    margin-bottom: 8px;
+    font-size: 1.4rem;
+}
+
+.orientation-card p {
+    color: #cbd5f5;
+    margin-bottom: 16px;
+}
+
+.btn-rotate {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .back-button {
