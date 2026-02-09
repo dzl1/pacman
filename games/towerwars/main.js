@@ -619,56 +619,87 @@ function draw() {
     });
 
     towers.forEach(tower => {
-        const height = 10 + tower.level * 6;
+        const towerWidth = 32;
+        const towerHeight = 24;
+        
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.beginPath();
-        ctx.ellipse(tower.x, tower.y + 8, 18, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(tower.x, tower.y + 8, towerWidth * 0.45, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Tower body (3D cylinder effect)
-        const topY = tower.y - height;
-        ctx.fillStyle = tower.color;
-        ctx.beginPath();
-        ctx.ellipse(tower.x, topY, 16, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillRect(tower.x - 16, topY, 32, height);
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.fillRect(tower.x - 14, topY + 2, 6, height - 4);
-
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath();
-        ctx.ellipse(tower.x, tower.y, 16, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
+        // Draw tank with filter based on tower type
+        if (tankImage.complete && tankImage.naturalWidth > 0) {
+            ctx.save();
+            ctx.translate(tower.x, tower.y);
+            
+            // Apply color filter based on tower type
+            switch(tower.type) {
+                case 'rapid':
+                    ctx.filter = 'hue-rotate(180deg) saturate(1.2)';
+                    break;
+                case 'cannon':
+                    ctx.filter = 'hue-rotate(0deg) saturate(1.3) brightness(1.1)';
+                    break;
+                case 'slow':
+                    ctx.filter = 'hue-rotate(90deg) saturate(1.2)';
+                    break;
+                case 'sniper':
+                    ctx.filter = 'hue-rotate(270deg) saturate(1.4)';
+                    break;
+                case 'mortar':
+                    ctx.filter = 'hue-rotate(30deg) saturate(1.3)';
+                    break;
+            }
+            
+            ctx.drawImage(tankImage, -towerWidth / 2, -towerHeight / 2, towerWidth, towerHeight);
+            ctx.restore();
+        } else {
+            ctx.fillStyle = tower.color;
+            ctx.fillRect(tower.x - towerWidth / 2, tower.y - towerHeight / 2, towerWidth, towerHeight);
+        }
 
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.font = '12px sans-serif';
+        ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`L${tower.level}`, tower.x, topY - 6);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`L${tower.level}`, tower.x, tower.y + 12);
     });
 
     enemies.forEach(enemy => {
-        const tankWidth = enemy.armored ? 34 : 28;
-        const tankHeight = enemy.armored ? 24 : 20;
-        const topY = enemy.y - tankHeight / 2;
+        const fontSize = enemy.armored ? 28 : 24;
+        const topY = enemy.y - 14;
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.beginPath();
-        ctx.ellipse(enemy.x, enemy.y + 8, tankWidth * 0.45, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(enemy.x, enemy.y + 8, 14, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        if (tankImage.complete && tankImage.naturalWidth > 0) {
-            ctx.save();
-            ctx.translate(enemy.x, enemy.y);
-            ctx.rotate(enemy.angle);
-            ctx.drawImage(tankImage, -tankWidth / 2, -tankHeight / 2, tankWidth, tankHeight);
-            ctx.restore();
-        } else {
-            ctx.fillStyle = enemy.armored ? '#fb7185' : '#f87171';
-            ctx.fillRect(enemy.x - tankWidth / 2, enemy.y - tankHeight / 2, tankWidth, tankHeight);
-        }
+        // Draw space invader emoji with color based on armor level
+        ctx.save();
+        ctx.translate(enemy.x, enemy.y);
+        
+        // Color variation based on armor strength
+        let armorColor = '#a1e3a1'; // weak - light green
+        if (enemy.armor >= 6) armorColor = '#fbbf24'; // medium - yellow
+        if (enemy.armor >= 12) armorColor = '#f87171'; // strong - red
+        if (enemy.armor >= 18) armorColor = '#e879f9'; // very strong - purple
+        
+        // Apply shadow/glow effect based on armor
+        ctx.shadowColor = armorColor;
+        ctx.shadowBlur = enemy.armored ? 8 : 4;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.filter = `drop-shadow(0 0 ${enemy.armored ? 6 : 3}px ${armorColor})`;
+        
+        ctx.font = `${fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = armorColor;
+        ctx.fillText('👾', 0, 0);
+        
+        ctx.restore();
 
         const barWidth = 28;
         const barHeight = 4;
