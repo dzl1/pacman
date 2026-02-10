@@ -518,7 +518,7 @@ function updateGhosts() {
         // Rotate ghost to face direction
         if (ghost.direction.x !== 0 || ghost.direction.z !== 0) {
             const angle = Math.atan2(ghost.direction.x, ghost.direction.z);
-            ghost.mesh.rotation.y = -angle;
+            ghost.mesh.rotation.y = angle;
         }
     });
 
@@ -539,11 +539,11 @@ function updateGhosts() {
                 // Update rotation immediately
                 if (ghost1.direction.x !== 0 || ghost1.direction.z !== 0) {
                     const angle = Math.atan2(ghost1.direction.x, ghost1.direction.z);
-                    ghost1.mesh.rotation.y = -angle;
+                    ghost1.mesh.rotation.y = angle;
                 }
                 if (ghost2.direction.x !== 0 || ghost2.direction.z !== 0) {
                     const angle = Math.atan2(ghost2.direction.x, ghost2.direction.z);
-                    ghost2.mesh.rotation.y = -angle;
+                    ghost2.mesh.rotation.y = angle;
                 }
             }
         }
