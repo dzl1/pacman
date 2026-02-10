@@ -564,7 +564,8 @@ function spawnEnemy(template) {
         pathIndex: 0,
         angle: 0,
         slowUntil: 0,
-        slowFactor: 1
+        slowFactor: 1,
+        pushHits: 0
     });
 }
 
@@ -607,10 +608,13 @@ function updateTowers(delta, time) {
         tower.cooldown -= delta;
         if (tower.cooldown > 0) return;
 
-        const target = enemies.find(enemy => {
-            const dist = Math.hypot(enemy.x - tower.x, enemy.y - tower.y);
-            return dist <= tower.range;
-        });
+        let target = tower.target;
+        if (!target || target.hp <= 0 || Math.hypot(target.x - tower.x, target.y - tower.y) > tower.range) {
+            target = enemies.find(enemy => {
+                const dist = Math.hypot(enemy.x - tower.x, enemy.y - tower.y);
+                return dist <= tower.range;
+            });
+        }
 
         if (target) {
             tower.cooldown = tower.fireRate;
@@ -622,7 +626,9 @@ function updateTowers(delta, time) {
                 splash: tower.splash,
                 slow: tower.slow,
                 speed: 260,
-                color: tower.color
+                color: tower.color,
+                towerType: tower.type,
+                towerLevel: tower.level
             });
             playShotSound(tower.type);
         }
@@ -659,11 +665,21 @@ function applyDamage(projectile, target) {
             if (dist <= projectile.splash) {
                 const effective = Math.max(1, projectile.damage - enemy.armor);
                 enemy.hp -= effective;
+                // Push back for slow tower level 3
+                if (projectile.towerType === 'slow' && projectile.towerLevel === 3) {
+                    enemy.pushHits++;
+                    enemy.pathIndex = Math.max(0, enemy.pathIndex - enemy.pushHits);
+                }
             }
         });
     } else {
         const effective = Math.max(1, projectile.damage - target.armor);
         target.hp -= effective;
+        // Push back for slow tower level 3
+        if (projectile.towerType === 'slow' && projectile.towerLevel === 3) {
+            target.pushHits++;
+            target.pathIndex = Math.max(0, target.pathIndex - target.pushHits);
+        }
     }
 
     if (projectile.slow) {
@@ -716,7 +732,8 @@ function placeOrUpgrade(cellX, cellY) {
         cooldown: 0,
         level: 1,
         baseCost: type.cost,
-        invested: type.cost
+        invested: type.cost,
+        target: null
     });
 
     state.gold -= type.cost;
@@ -981,6 +998,19 @@ canvas.addEventListener('click', event => {
     const y = (event.clientY - rect.top) * scaleY;
     const cellX = Math.floor(x / TILE);
     const cellY = Math.floor(y / TILE);
+
+    // Check if clicking on an enemy for targeting
+    if (selectedTowerInstance) {
+        const clickedEnemy = enemies.find(enemy => {
+            const dist = Math.hypot(enemy.x - x, enemy.y - y);
+            return dist <= 24; // enemy size
+        });
+        if (clickedEnemy) {
+            selectedTowerInstance.target = clickedEnemy;
+            return;
+        }
+    }
+
     placeOrUpgrade(cellX, cellY);
 });
 
