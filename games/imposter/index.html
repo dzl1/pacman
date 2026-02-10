@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imposter - Social Deduction Games</title>
+    <link rel="stylesheet" href="../../landing.css">
+    <style>
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 60, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50px;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #e0e0e0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-link:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.8);
+            transform: scale(1.05);
+        }
+
+        .game-mode-card {
+            background: rgba(30, 30, 60, 0.6);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .game-mode-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(102, 126, 234, 0.8);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .game-mode-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .game-mode-card h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .game-mode-card p {
+            font-size: 16px;
+            color: #b0b0d0;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .difficulty.easy { background: #34d399; color: #064e3b; }
+        .difficulty.medium { background: #fbbf24; color: #78350f; }
+        .difficulty.hard { background: #f87171; color: #7f1d1d; }
+
+        .players {
+            font-size: 14px;
+            color: #a0a0c0;
+            margin-bottom: 20px;
+        }
+
+        .coming-soon {
+            opacity: 0.6;
+        }
+
+        .coming-soon .btn {
+            background: rgba(102, 126, 234, 0.2);
+            color: #808080;
+            cursor: not-allowed;
+        }
+
+        .coming-soon .btn:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="stars"></div>
+    </div>
+
+    <a href="../../" class="back-link">← Back to Game Hub</a>
+
+    <header>
+        <div class="container">
+            <h1 class="logo">🕵️ IMPOSTER</h1>
+            <p class="tagline">Social Deduction Games - Find the Imposter Among Us</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="intro">
+                <h2>Choose Your Game Mode</h2>
+                <p>Experience various social deduction challenges where you must identify the imposter hiding among the crew. Each mode offers unique gameplay mechanics and strategic depth.</p>
+            </section>
+
+            <section class="games-grid">
+                <div class="grid">
+                    <div class="game-mode-card">
+                        <div class="game-mode-icon">🚀</div>
+                        <h3>Classic Among Us</h3>
+                        <p>The original social deduction experience. Complete tasks while secretly eliminating crew members as the imposter, or work together to identify and eject the imposter.</p>
+                        <span class="difficulty medium">Medium</span>
+                        <div class="players">4-10 Players</div>
+                        <a href="#" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-mode-card">
+                        <div class="game-mode-icon">🧩</div>
+                        <h3>Puzzle Imposter</h3>
+                        <p>A logic-based variation where players solve puzzles to reveal clues about who the imposter might be. Perfect for smaller groups focused on deduction.</p>
+                        <span class="difficulty easy">Easy</span>
+                        <div class="players">3-8 Players</div>
+                        <a href="#" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-mode-card">
+                        <div class="game-mode-icon">⚡</div>
+                        <h3>Speed Imposter</h3>
+                        <p>Fast-paced rounds with time limits. Quick decisions and rapid voting make this mode intense and unpredictable.</p>
+                        <span class="difficulty hard">Hard</span>
+                        <div class="players">4-12 Players</div>
+                        <a href="#" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-mode-card">
+                        <div class="game-mode-icon">🎭</div>
+                        <h3>Role Imposter</h3>
+                        <p>Advanced mode with special roles and abilities. Detectives, spies, and saboteurs add layers of strategy and deception.</p>
+                        <span class="difficulty hard">Hard</span>
+                        <div class="players">6-15 Players</div>
+                        <a href="#" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-mode-card">
+                        <div class="game-mode-icon">🌌</div>
+                        <h3>Space Station</h3>
+                        <p>Set in a detailed 3D space station. Navigate complex environments while maintaining your cover or hunting for the imposter.</p>
+                        <span class="difficulty medium">Medium</span>
+                        <div class="players">4-10 Players</div>
+                        <a href="#" class="btn btn-primary">Play Now</a>
+                    </div>
+
+                    <div class="game-mode-card coming-soon">
+                        <div class="game-mode-icon">🤖</div>
+                        <h3>AI Imposter</h3>
+                        <p>Play against computer-controlled imposters and crew members. Perfect for solo play or when you need more players.</p>
+                        <span class="difficulty easy">Easy</span>
+                        <div class="players">1-8 Players</div>
+                        <a href="#" class="btn btn-primary">Coming Soon</a>
+                    </div>
+
+                    <div class="game-mode-card coming-soon">
+                        <div class="game-mode-icon">🌍</div>
+                        <h3>Global Conspiracy</h3>
+                        <p>Large-scale multiplayer mode with multiple imposters and complex voting mechanics across different locations.</p>
+                        <span class="difficulty hard">Hard</span>
+                        <div class="players">10-25 Players</div>
+                        <a href="#" class="btn btn-primary">Coming Soon</a>
+                    </div>
+
+                    <div class="game-mode-card coming-soon">
+                        <div class="game-mode-icon">🎪</div>
+                        <h3>Party Mode</h3>
+                        <p>Casual, light-hearted version with fun themes and simplified rules. Great for parties and family gatherings.</p>
+                        <span class="difficulty easy">Easy</span>
+                        <div class="players">4-20 Players</div>
+                        <a href="#" class="btn btn-primary">Coming Soon</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="about">
+                <h2>About Imposter Games</h2>
+                <p>Imposter is a collection of social deduction games inspired by Among Us and other hidden role games. The core mechanic revolves around deception, trust, and logical deduction as players try to identify who among them is secretly working against the group.</p>
+
+                <h3>Game Features</h3>
+                <ul class="features">
+                    <li>🕵️ Multiple game modes with different mechanics</li>
+                    <li>👥 Support for various player counts</li>
+                    <li>🎯 Strategic voting and discussion phases</li>
+                    <li>🧠 Logic puzzles and deduction challenges</li>
+                    <li>⚡ Quick rounds for fast-paced gameplay</li>
+                    <li>🎨 Customizable themes and settings</li>
+                </ul>
+
+                <h3>How to Play</h3>
+                <p>Each game mode follows the basic structure of social deduction: most players are crew members trying to complete objectives, while a few are imposters trying to sabotage them. Through discussion, voting, and gameplay, players must identify and eliminate the imposters before they succeed.</p>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Game Hub. All rights reserved. | <a href="https://github.com/dzl1/pacman" target="_blank">View on GitHub</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Create animated background stars
+        const starsContainer = document.querySelector('.stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

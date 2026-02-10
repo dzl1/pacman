@@ -571,3 +571,60 @@ footer a:hover {
     }
 }
 
+/* Imposter Preview */
+.imposter-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    animation: float 3s ease-in-out infinite;
+}
+
+.imposter-icon {
+    font-size: 64px;
+    animation: detectivePulse 2.5s ease-in-out infinite;
+}
+
+.imposter-player {
+    font-size: 46px;
+    animation: playerFloat 2s ease-in-out infinite;
+}
+
+.imposter-imposter {
+    font-size: 46px;
+    animation: imposterGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes detectivePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes playerFloat {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
+}
+
+@keyframes imposterGlow {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.6));
+    }
+}
+

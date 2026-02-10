@@ -668,7 +668,12 @@ function applyDamage(projectile, target) {
                 // Push back for slow tower level 3
                 if (projectile.towerType === 'slow' && projectile.towerLevel === 3) {
                     enemy.pushHits++;
-                    enemy.pathIndex = Math.max(0, enemy.pathIndex - enemy.pushHits);
+                    const pushBackSteps = 1; // Push back by 1 step per hit
+                    enemy.pathIndex = Math.max(0, enemy.pathIndex - pushBackSteps);
+                    // Reposition enemy to the new path point
+                    const newPos = pathPoints[enemy.pathIndex];
+                    enemy.x = newPos.x;
+                    enemy.y = newPos.y;
                 }
             }
         });
@@ -678,7 +683,12 @@ function applyDamage(projectile, target) {
         // Push back for slow tower level 3
         if (projectile.towerType === 'slow' && projectile.towerLevel === 3) {
             target.pushHits++;
-            target.pathIndex = Math.max(0, target.pathIndex - target.pushHits);
+            const pushBackSteps = 1; // Push back by 1 step per hit
+            target.pathIndex = Math.max(0, target.pathIndex - pushBackSteps);
+            // Reposition enemy to the new path point
+            const newPos = pathPoints[target.pathIndex];
+            target.x = newPos.x;
+            target.y = newPos.y;
         }
     }
 
