@@ -532,9 +532,89 @@ function updateGhosts() {
                 Math.pow(ghost1.mesh.position.z - ghost2.mesh.position.z, 2)
             );
             if (dist < 0.7) {
-                // Reverse directions to move away
-                ghost1.direction = { x: -ghost1.direction.x, z: -ghost1.direction.z };
-                ghost2.direction = { x: -ghost2.direction.x, z: -ghost2.direction.z };
+                // Move away from each other
+                const dx = ghost1.mesh.position.x - ghost2.mesh.position.x;
+                const dz = ghost1.mesh.position.z - ghost2.mesh.position.z;
+                
+                // Normalize to direction (-1, 0, 1)
+                let dirX = dx > 0.1 ? 1 : dx < -0.1 ? -1 : 0;
+                let dirZ = dz > 0.1 ? 1 : dz < -0.1 ? -1 : 0;
+                
+                if (dirX === 0 && dirZ === 0) {
+                    // If too close to determine direction, choose random
+                    dirX = Math.random() > 0.5 ? 1 : -1;
+                    dirZ = 0;
+                }
+                
+                ghost1.direction = { x: dirX, z: dirZ };
+                
+                // Validate direction for ghost1
+                const g1GridX = Math.round(ghost1.mesh.position.x / CELL_SIZE);
+                const g1GridZ = Math.round(ghost1.mesh.position.z / CELL_SIZE);
+                const nextG1X = g1GridX + dirX;
+                const nextG1Z = g1GridZ + dirZ;
+                if (nextG1Z < 0 || nextG1Z >= mazeLayout.length || 
+                    nextG1X < 0 || nextG1X >= mazeLayout[0].length ||
+                    mazeLayout[nextG1Z][nextG1X] === 1) {
+                    // Invalid direction, choose random valid
+                    const directions = [
+                        { x: 1, z: 0 },
+                        { x: -1, z: 0 },
+                        { x: 0, z: 1 },
+                        { x: 0, z: -1 }
+                    ];
+                    for (let d of directions) {
+                        const nx = g1GridX + d.x;
+                        const nz = g1GridZ + d.z;
+                        if (nz >= 0 && nz < mazeLayout.length && 
+                            nx >= 0 && nx < mazeLayout[0].length &&
+                            mazeLayout[nz][nx] !== 1) {
+                            ghost1.direction = d;
+                            break;
+                        }
+                    }
+                }
+                
+                // For ghost2, move away from ghost1
+                const dx2 = ghost2.mesh.position.x - ghost1.mesh.position.x;
+                const dz2 = ghost2.mesh.position.z - ghost1.mesh.position.z;
+                
+                let dirX2 = dx2 > 0.1 ? 1 : dx2 < -0.1 ? -1 : 0;
+                let dirZ2 = dz2 > 0.1 ? 1 : dz2 < -0.1 ? -1 : 0;
+                
+                if (dirX2 === 0 && dirZ2 === 0) {
+                    dirX2 = Math.random() > 0.5 ? 1 : -1;
+                    dirZ2 = 0;
+                }
+                
+                ghost2.direction = { x: dirX2, z: dirZ2 };
+                
+                // Validate direction for ghost2
+                const g2GridX = Math.round(ghost2.mesh.position.x / CELL_SIZE);
+                const g2GridZ = Math.round(ghost2.mesh.position.z / CELL_SIZE);
+                const nextG2X = g2GridX + dirX2;
+                const nextG2Z = g2GridZ + dirZ2;
+                if (nextG2Z < 0 || nextG2Z >= mazeLayout.length || 
+                    nextG2X < 0 || nextG2X >= mazeLayout[0].length ||
+                    mazeLayout[nextG2Z][nextG2X] === 1) {
+                    // Invalid direction, choose random valid
+                    const directions = [
+                        { x: 1, z: 0 },
+                        { x: -1, z: 0 },
+                        { x: 0, z: 1 },
+                        { x: 0, z: -1 }
+                    ];
+                    for (let d of directions) {
+                        const nx = g2GridX + d.x;
+                        const nz = g2GridZ + d.z;
+                        if (nz >= 0 && nz < mazeLayout.length && 
+                            nx >= 0 && nx < mazeLayout[0].length &&
+                            mazeLayout[nz][nx] !== 1) {
+                            ghost2.direction = d;
+                            break;
+                        }
+                    }
+                }
                 
                 // Update rotation immediately
                 if (ghost1.direction.x !== 0 || ghost1.direction.z !== 0) {
