@@ -206,17 +206,42 @@ h2::after {
 .flappy-bird {
     width: 176px;
     height: 176px;
-    background-image: url('/games/flappy/images/bird.png');
-    background-size: 200% 100%;
-    background-position: 0% 50%;
-    background-repeat: no-repeat;
-    animation: flapSprite 0.8s steps(1) infinite, flap 0.8s ease-in-out infinite;
+    position: relative;
+    animation: flap 0.8s ease-in-out infinite;
     filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.45));
 }
 
-@keyframes flapSprite {
-    0%, 49.9% { background-position: 0% 50%; }
-    50%, 100% { background-position: 100% 50%; }
+.flappy-bird::before,
+.flappy-bird::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/games/flappy/images/bird.png');
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    transition: opacity 0.2s ease;
+}
+
+.flappy-bird::before {
+    background-position: 0% 50%;
+    opacity: 1;
+    animation: flapUp 0.9s ease-in-out infinite;
+}
+
+.flappy-bird::after {
+    background-position: 100% 50%;
+    opacity: 0;
+    animation: flapDown 0.9s ease-in-out infinite;
+}
+
+@keyframes flapUp {
+    0%, 45% { opacity: 1; }
+    55%, 100% { opacity: 0; }
+}
+
+@keyframes flapDown {
+    0%, 45% { opacity: 0; }
+    55%, 100% { opacity: 1; }
 }
 
 @keyframes bounce {
