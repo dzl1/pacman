@@ -83,13 +83,14 @@ const CELL_SIZE = 1;
 const PACMAN_SPEED = 0.05;
 const GHOST_SPEED = 0.03;
 const PACMAN_RADIUS = 0.46; // Collision radius for Pac-Man
+const GHOST_RADIUS = 0.35; // Collision radius for ghosts
 
 // Create Pac-Man
 function createPacman() {
     const geometry = new THREE.SphereGeometry(0.4, 32, 32, 0, Math.PI * 2, 0, Math.PI * 1.5);
     const material = new THREE.MeshStandardMaterial({ 
-        color: 0x00ff00,
-        emissive: 0x00ff00,
+        color: 0xffd400,
+        emissive: 0xffd400,
         emissiveIntensity: 0.3
     });
     pacman = new THREE.Mesh(geometry, material);
@@ -100,7 +101,7 @@ function createPacman() {
     // Add glow effect
     const glowGeometry = new THREE.SphereGeometry(0.5, 16, 16);
     const glowMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
+        color: 0xffd400,
         transparent: true,
         opacity: 0.3
     });
@@ -395,8 +396,8 @@ function updateGhosts() {
         const currentGridX = Math.round(ghost.mesh.position.x / CELL_SIZE);
         const currentGridZ = Math.round(ghost.mesh.position.z / CELL_SIZE);
         
-        // Simple AI: random direction changes
-        if (Math.random() < 0.02) {
+        // Simple AI: random direction changes (less frequent)
+        if (Math.random() < 0.005) {
             const directions = [
                 { x: 1, z: 0 },
                 { x: -1, z: 0 },
@@ -422,36 +423,75 @@ function updateGhosts() {
             const nextPosX = ghost.mesh.position.x + ghost.direction.x * GHOST_SPEED;
             const nextPosZ = ghost.mesh.position.z + ghost.direction.z * GHOST_SPEED;
             
-            // Find which grid cell that position would be in
-            const nextGridX = Math.round(nextPosX / CELL_SIZE);
-            const nextGridZ = Math.round(nextPosZ / CELL_SIZE);
+            // Boundary collision detection similar to Pacman
+            let canMoveX = true;
+            let canMoveZ = true;
             
-            // Check if that grid cell is a valid path (0, 2, or 3 - not a wall)
-            if (nextGridZ >= 0 && nextGridZ < mazeLayout.length && 
-                nextGridX >= 0 && nextGridX < mazeLayout[0].length &&
-                mazeLayout[nextGridZ][nextGridX] !== 1) {
+            if (ghost.direction.x !== 0) {
+                const nextGridX = currentGridX + ghost.direction.x;
+                const wallBoundary = nextGridX - 0.5 * ghost.direction.x;
+                const ghostEdge = nextPosX + GHOST_RADIUS * ghost.direction.x;
                 
+                if (nextGridX >= 0 && nextGridX < mazeLayout[0].length && 
+                    mazeLayout[currentGridZ][nextGridX] === 1) {
+                    canMoveX = (ghost.direction.x > 0 && ghostEdge < wallBoundary) ||
+                               (ghost.direction.x < 0 && ghostEdge > wallBoundary);
+                }
+            }
+            
+            if (ghost.direction.z !== 0) {
+                const nextGridZ = currentGridZ + ghost.direction.z;
+                const wallBoundary = nextGridZ - 0.5 * ghost.direction.z;
+                const ghostEdge = nextPosZ + GHOST_RADIUS * ghost.direction.z;
+                
+                if (nextGridZ >= 0 && nextGridZ < mazeLayout.length && 
+                    mazeLayout[nextGridZ][currentGridX] === 1) {
+                    canMoveZ = (ghost.direction.z > 0 && ghostEdge < wallBoundary) ||
+                               (ghost.direction.z < 0 && ghostEdge > wallBoundary);
+                }
+            }
+            
+            if (canMoveX && ghost.direction.x !== 0) {
                 ghost.mesh.position.x = nextPosX;
+            }
+            if (canMoveZ && ghost.direction.z !== 0) {
                 ghost.mesh.position.z = nextPosZ;
-            } else {
-                // Change direction if hitting wall
+            }
+            
+            // Lock perpendicular axis to grid
+            if (ghost.direction.x !== 0) {
+                ghost.mesh.position.z = currentGridZ * CELL_SIZE;
+            }
+            if (ghost.direction.z !== 0) {
+                ghost.mesh.position.x = currentGridX * CELL_SIZE;
+            }
+            
+            // If couldn't move in current direction, choose new direction
+            if ((!canMoveX && ghost.direction.x !== 0) || (!canMoveZ && ghost.direction.z !== 0)) {
                 const directions = [
                     { x: 1, z: 0 },
                     { x: -1, z: 0 },
                     { x: 0, z: 1 },
                     { x: 0, z: -1 }
                 ];
-                ghost.direction = directions[Math.floor(Math.random() * directions.length)];
-            }
-            
-            // CRITICAL: Lock perpendicular axis to grid to stay centered on valid cells
-            if (ghost.direction.x !== 0) {
-                // Moving horizontally, lock Z to grid
-                ghost.mesh.position.z = currentGridZ * CELL_SIZE;
-            }
-            if (ghost.direction.z !== 0) {
-                // Moving vertically, lock X to grid
-                ghost.mesh.position.x = currentGridX * CELL_SIZE;
+                let attempts = 0;
+                let newDirection = directions[Math.floor(Math.random() * directions.length)];
+                
+                // Try to find a valid direction
+                while (attempts < 4) {
+                    const nextGridX = currentGridX + newDirection.x;
+                    const nextGridZ = currentGridZ + newDirection.z;
+                    
+                    if (nextGridZ >= 0 && nextGridZ < mazeLayout.length && 
+                        nextGridX >= 0 && nextGridX < mazeLayout[0].length &&
+                        mazeLayout[nextGridZ][nextGridX] !== 1) {
+                        ghost.direction = newDirection;
+                        break;
+                    }
+                    
+                    newDirection = directions[Math.floor(Math.random() * directions.length)];
+                    attempts++;
+                }
             }
         }
 
@@ -474,7 +514,40 @@ function updateGhosts() {
                 loseLife();
             }
         }
+
+        // Rotate ghost to face direction
+        if (ghost.direction.x !== 0 || ghost.direction.z !== 0) {
+            const angle = Math.atan2(ghost.direction.x, ghost.direction.z);
+            ghost.mesh.rotation.y = -angle;
+        }
     });
+
+    // Check collisions between ghosts
+    for (let i = 0; i < ghosts.length; i++) {
+        for (let j = i + 1; j < ghosts.length; j++) {
+            const ghost1 = ghosts[i];
+            const ghost2 = ghosts[j];
+            const dist = Math.sqrt(
+                Math.pow(ghost1.mesh.position.x - ghost2.mesh.position.x, 2) +
+                Math.pow(ghost1.mesh.position.z - ghost2.mesh.position.z, 2)
+            );
+            if (dist < 0.7) {
+                // Reverse directions to move away
+                ghost1.direction = { x: -ghost1.direction.x, z: -ghost1.direction.z };
+                ghost2.direction = { x: -ghost2.direction.x, z: -ghost2.direction.z };
+                
+                // Update rotation immediately
+                if (ghost1.direction.x !== 0 || ghost1.direction.z !== 0) {
+                    const angle = Math.atan2(ghost1.direction.x, ghost1.direction.z);
+                    ghost1.mesh.rotation.y = -angle;
+                }
+                if (ghost2.direction.x !== 0 || ghost2.direction.z !== 0) {
+                    const angle = Math.atan2(ghost2.direction.x, ghost2.direction.z);
+                    ghost2.mesh.rotation.y = -angle;
+                }
+            }
+        }
+    }
 
     // Power-up timer - this needs to be outside the ghost loop to avoid multiple updates per frame
     if (gameState.powerUpActive) {
