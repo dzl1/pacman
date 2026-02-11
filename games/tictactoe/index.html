@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Game Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .setup {
+            margin-bottom: 30px;
+        }
+
+        .setup-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 5px;
+            margin: 30px auto;
+            max-width: 600px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background: #fff;
+            border: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            aspect-ratio: 1;
+            min-height: 40px;
+        }
+
+        .cell:hover {
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        .cell.taken:hover {
+            background: #fff;
+            transform: none;
+        }
+
+        .cell.x {
+            color: #e74c3c;
+        }
+
+        .cell.o {
+            color: #3498db;
+        }
+
+        .status {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #333;
+            min-height: 2em;
+        }
+
+        .winner {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .draw {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .learning-stats {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 2px solid #667eea;
+        }
+
+        .learning-stats h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Back to Hub</a>
+
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+
+        <div class="setup">
+            <div class="setup-controls">
+                <div class="control-group">
+                    <label for="boardSize">Board Size (3-10):</label>
+                    <input type="number" id="boardSize" min="3" max="10" value="3">
+                </div>
+                <div class="control-group">
+                    <label for="winLength">Win Length:</label>
+                    <input type="number" id="winLength" min="3" max="10" value="3">
+                </div>
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="learningEnabled" checked>
+                        AI Learning
+                    </label>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="startGame">Start New Game</button>
+            <button class="btn btn-secondary" id="resetLearning">Reset AI Learning</button>
+        </div>
+
+        <div class="learning-stats" id="learningStats" style="display: none;">
+            <h3>AI Learning Stats</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Games Learned:</span>
+                    <span class="stat-value" id="gamesLearned">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win Rate:</span>
+                    <span class="stat-value" id="winRate">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Draw Rate:</span>
+                    <span class="stat-value" id="drawRate">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status" id="status">Choose board size and click "Start New Game"</div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <button class="btn btn-secondary" id="resetGame" style="display: none;">Reset Game</button>
+    </div>
+
+    <script>
+        class TicTacToe {
+            constructor() {
+                this.board = [];
+                this.currentPlayer = 'X';
+                this.gameActive = false;
+                this.boardSize = 3;
+                this.winLength = 3;
+                this.aiPlayer = 'O';
+                this.humanPlayer = 'X';
+                this.gameHistory = []; // Track moves for learning
+                this.learningEnabled = true;
+
+                // Load learning data from localStorage
+                this.loadLearningData();
+
+                this.gameBoard = document.getElementById('gameBoard');
+                this.status = document.getElementById('status');
+                this.startGameBtn = document.getElementById('startGame');
+                this.resetGameBtn = document.getElementById('resetGame');
+                this.boardSizeInput = document.getElementById('boardSize');
+                this.winLengthInput = document.getElementById('winLength');
+                this.learningEnabledCheckbox = document.getElementById('learningEnabled');
+                this.resetLearningBtn = document.getElementById('resetLearning');
+                this.learningStats = document.getElementById('learningStats');
+                this.gamesLearnedEl = document.getElementById('gamesLearned');
+                this.winRateEl = document.getElementById('winRate');
+                this.drawRateEl = document.getElementById('drawRate');
+
+                this.startGameBtn.addEventListener('click', () => this.startGame());
+                this.resetGameBtn.addEventListener('click', () => this.resetGame());
+                this.resetLearningBtn.addEventListener('click', () => this.resetLearning());
+                this.learningEnabledCheckbox.addEventListener('change', () => this.toggleLearning());
+
+                this.updateLearningStats();
+                this.learningStats.style.display = 'block';
+            }
+
+            loadLearningData() {
+                try {
+                    const data = localStorage.getItem('tictactoe_learning');
+                    this.learningData = data ? JSON.parse(data) : {};
+                } catch (e) {
+                    this.learningData = {};
+                }
+            }
+
+            saveLearningData() {
+                try {
+                    localStorage.setItem('tictactoe_learning', JSON.stringify(this.learningData));
+                } catch (e) {
+                    // localStorage might be full or disabled
+                }
+            }
+
+            getBoardKey(board) {
+                return board.map(row => row.join('')).join('|');
+            }
+
+            getMoveKey(board, move) {
+                return `${this.getBoardKey(board)}->${move.row},${move.col}`;
+            }
+
+            updateLearning(outcome) {
+                if (!this.learningEnabled || this.gameHistory.length === 0) return;
+
+                // outcome: 1 for AI win, -1 for AI loss, 0 for draw
+                const learningRate = 0.1;
+                const discountFactor = 0.9;
+
+                for (let i = this.gameHistory.length - 1; i >= 0; i--) {
+                    const { board, move } = this.gameHistory[i];
+                    const moveKey = this.getMoveKey(board, move);
+
+                    if (!this.learningData[moveKey]) {
+                        this.learningData[moveKey] = { value: 0, count: 0 };
+                    }
+
+                    // Update Q-value using temporal difference learning
+                    const oldValue = this.learningData[moveKey].value;
+                    const reward = (i === this.gameHistory.length - 1) ? outcome : 0;
+                    const nextMaxValue = (i < this.gameHistory.length - 1) ?
+                        Math.max(...Object.values(this.learningData).filter(d => d.value !== undefined).map(d => d.value)) : 0;
+
+                    const newValue = oldValue + learningRate * (reward + discountFactor * nextMaxValue - oldValue);
+                    this.learningData[moveKey].value = newValue;
+                    this.learningData[moveKey].count += 1;
+                }
+
+                this.saveLearningData();
+                this.updateLearningStats();
+            }
+
+            startGame() {
+                this.boardSize = parseInt(this.boardSizeInput.value);
+                this.winLength = parseInt(this.winLengthInput.value);
+
+                // Validate inputs
+                if (this.boardSize < 3 || this.boardSize > 10) {
+                    alert('Board size must be between 3 and 10');
+                    return;
+                }
+                if (this.winLength < 3 || this.winLength > this.boardSize) {
+                    alert('Win length must be between 3 and board size');
+                    return;
+                }
+
+                this.initializeBoard();
+                this.gameActive = true;
+                this.currentPlayer = 'X';
+                this.gameHistory = [];
+                this.status.textContent = `Player ${this.currentPlayer}'s turn`;
+                this.startGameBtn.style.display = 'none';
+                this.resetGameBtn.style.display = 'inline-block';
+                this.boardSizeInput.disabled = true;
+                this.winLengthInput.disabled = true;
+            }
+
+            initializeBoard() {
+                this.board = Array(this.boardSize).fill().map(() => Array(this.boardSize).fill(''));
+                this.gameBoard.style.gridTemplateColumns = `repeat(${this.boardSize}, 1fr)`;
+                this.gameBoard.innerHTML = '';
+
+                for (let i = 0; i < this.boardSize * this.boardSize; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.index = i;
+                    cell.addEventListener('click', () => this.handleCellClick(i));
+                    this.gameBoard.appendChild(cell);
+                }
+            }
+
+            handleCellClick(index) {
+                if (!this.gameActive) return;
+
+                const row = Math.floor(index / this.boardSize);
+                const col = index % this.boardSize;
+
+                if (this.board[row][col] !== '') return;
+
+                this.makeMove(row, col, this.currentPlayer);
+
+                if (this.checkWinner(this.currentPlayer)) {
+                    this.status.textContent = `Player ${this.currentPlayer} wins!`;
+                    this.status.className = 'status winner';
+                    this.gameActive = false;
+
+                    // Update learning if AI lost
+                    if (this.currentPlayer === this.humanPlayer) {
+                        this.updateLearning(-1);
+                    }
+                    return;
+                }
+
+                if (this.isBoardFull()) {
+                    this.status.textContent = "It's a draw!";
+                    this.status.className = 'status draw';
+                    this.gameActive = false;
+                    this.updateLearning(0); // Draw
+                    return;
+                }
+
+                this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+                this.status.textContent = `Player ${this.currentPlayer}'s turn`;
+                this.status.className = 'status';
+
+                // AI move if it's AI's turn
+                if (this.currentPlayer === this.aiPlayer && this.gameActive) {
+                    setTimeout(() => this.makeAIMove(), 500);
+                }
+            }
+
+            makeMove(row, col, player) {
+                // Store board state before move for learning
+                const boardBeforeMove = this.board.map(row => [...row]);
+                this.board[row][col] = player;
+                const index = row * this.boardSize + col;
+                const cell = this.gameBoard.children[index];
+                cell.textContent = player;
+                cell.classList.add('taken', player.toLowerCase());
+
+                // Record move for learning if it's AI's move
+                if (player === this.aiPlayer) {
+                    this.gameHistory.push({
+                        board: boardBeforeMove,
+                        move: { row, col }
+                    });
+                }
+            }
+
+            makeAIMove() {
+                let bestMove = this.findBestMove();
+
+                if (bestMove) {
+                    this.makeMove(bestMove.row, bestMove.col, this.aiPlayer);
+
+                    if (this.checkWinner(this.aiPlayer)) {
+                        this.status.textContent = `Player ${this.aiPlayer} wins!`;
+                        this.status.className = 'status winner';
+                        this.gameActive = false;
+                        this.updateLearning(1); // AI won
+                        return;
+                    }
+
+                    if (this.isBoardFull()) {
+                        this.status.textContent = "It's a draw!";
+                        this.status.className = 'status draw';
+                        this.gameActive = false;
+                        this.updateLearning(0); // Draw
+                        return;
+                    }
+
+                    this.currentPlayer = this.humanPlayer;
+                    this.status.textContent = `Player ${this.currentPlayer}'s turn`;
+                    this.status.className = 'status';
+                }
+            }
+
+            findBestMove() {
+                // Try to win
+                let move = this.findWinningMove(this.aiPlayer);
+                if (move) return move;
+
+                // Try to block player
+                move = this.findWinningMove(this.humanPlayer);
+                if (move) return move;
+
+                // Use learning data to choose best move
+                if (this.learningEnabled) {
+                    const boardKey = this.getBoardKey(this.board);
+                    const possibleMoves = [];
+
+                    for (let i = 0; i < this.boardSize; i++) {
+                        for (let j = 0; j < this.boardSize; j++) {
+                            if (this.board[i][j] === '') {
+                                const moveKey = `${boardKey}->${i},${j}`;
+                                const learningInfo = this.learningData[moveKey];
+                                possibleMoves.push({
+                                    row: i,
+                                    col: j,
+                                    value: learningInfo ? learningInfo.value : 0,
+                                    count: learningInfo ? learningInfo.count : 0
+                                });
+                            }
+                        }
+                    }
+
+                    if (possibleMoves.length > 0) {
+                        // Sort by value (higher is better), then by experience (higher count is better)
+                        possibleMoves.sort((a, b) => {
+                            if (a.value !== b.value) return b.value - a.value;
+                            return b.count - a.count;
+                        });
+
+                        // Add some exploration (10% chance to choose randomly)
+                        if (Math.random() < 0.1) {
+                            return possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                        }
+
+                        return possibleMoves[0];
+                    }
+                }
+
+                // Fallback to basic strategy
+                // Play center if available
+                const center = Math.floor(this.boardSize / 2);
+                if (this.board[center][center] === '') {
+                    return { row: center, col: center };
+                }
+
+                // Play random corner
+                const corners = [
+                    { row: 0, col: 0 },
+                    { row: 0, col: this.boardSize - 1 },
+                    { row: this.boardSize - 1, col: 0 },
+                    { row: this.boardSize - 1, col: this.boardSize - 1 }
+                ];
+
+                for (let corner of corners) {
+                    if (this.board[corner.row][corner.col] === '') {
+                        return corner;
+                    }
+                }
+
+                // Play random empty cell
+                const emptyCells = [];
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        if (this.board[i][j] === '') {
+                            emptyCells.push({ row: i, col: j });
+                        }
+                    }
+                }
+
+                if (emptyCells.length > 0) {
+                    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                }
+
+                return null;
+            }
+
+            findWinningMove(player) {
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        if (this.board[i][j] === '') {
+                            this.board[i][j] = player;
+                            if (this.checkWinner(player)) {
+                                this.board[i][j] = '';
+                                return { row: i, col: j };
+                            }
+                            this.board[i][j] = '';
+                        }
+                    }
+                }
+                return null;
+            }
+
+            checkWinner(player) {
+                // Check rows
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j <= this.boardSize - this.winLength; j++) {
+                        let win = true;
+                        for (let k = 0; k < this.winLength; k++) {
+                            if (this.board[i][j + k] !== player) {
+                                win = false;
+                                break;
+                            }
+                        }
+                        if (win) return true;
+                    }
+                }
+
+                // Check columns
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j <= this.boardSize - this.winLength; j++) {
+                        let win = true;
+                        for (let k = 0; k < this.winLength; k++) {
+                            if (this.board[j + k][i] !== player) {
+                                win = false;
+                                break;
+                            }
+                        }
+                        if (win) return true;
+                    }
+                }
+
+                // Check diagonals (top-left to bottom-right)
+                for (let i = 0; i <= this.boardSize - this.winLength; i++) {
+                    for (let j = 0; j <= this.boardSize - this.winLength; j++) {
+                        let win = true;
+                        for (let k = 0; k < this.winLength; k++) {
+                            if (this.board[i + k][j + k] !== player) {
+                                win = false;
+                                break;
+                            }
+                        }
+                        if (win) return true;
+                    }
+                }
+
+                // Check diagonals (top-right to bottom-left)
+                for (let i = 0; i <= this.boardSize - this.winLength; i++) {
+                    for (let j = this.winLength - 1; j < this.boardSize; j++) {
+                        let win = true;
+                        for (let k = 0; k < this.winLength; k++) {
+                            if (this.board[i + k][j - k] !== player) {
+                                win = false;
+                                break;
+                            }
+                        }
+                        if (win) return true;
+                    }
+                }
+
+                return false;
+            }
+
+            isBoardFull() {
+                return this.board.every(row => row.every(cell => cell !== ''));
+            }
+
+            resetGame() {
+                this.gameActive = false;
+                this.board = [];
+                this.gameBoard.innerHTML = '';
+                this.status.textContent = 'Choose board size and click "Start New Game"';
+                this.status.className = 'status';
+                this.startGameBtn.style.display = 'inline-block';
+                this.resetGameBtn.style.display = 'none';
+                this.boardSizeInput.disabled = false;
+                this.winLengthInput.disabled = false;
+            }
+
+            toggleLearning() {
+                this.learningEnabled = this.learningEnabledCheckbox.checked;
+            }
+
+            resetLearning() {
+                if (confirm('Are you sure you want to reset all AI learning data? This will make the AI forget all previous games.')) {
+                    this.learningData = {};
+                    this.saveLearningData();
+                    this.updateLearningStats();
+                    alert('AI learning data has been reset.');
+                }
+            }
+
+            updateLearningStats() {
+                const entries = Object.values(this.learningData);
+                const totalGames = entries.length;
+
+                if (totalGames === 0) {
+                    this.gamesLearnedEl.textContent = '0';
+                    this.winRateEl.textContent = '0%';
+                    this.drawRateEl.textContent = '0%';
+                    return;
+                }
+
+                // Count outcomes (this is approximate since we store move values, not game outcomes directly)
+                // We'll estimate based on positive/negative values
+                const wins = entries.filter(entry => entry.value > 0.5).length;
+                const draws = entries.filter(entry => entry.value >= -0.1 && entry.value <= 0.1).length;
+                const losses = totalGames - wins - draws;
+
+                const winRate = Math.round((wins / totalGames) * 100);
+                const drawRate = Math.round((draws / totalGames) * 100);
+
+                this.gamesLearnedEl.textContent = totalGames.toLocaleString();
+                this.winRateEl.textContent = winRate + '%';
+                this.drawRateEl.textContent = drawRate + '%';
+            }
+        }
+
+        // Initialize the game
+        new TicTacToe();
+    </script>
+</body>
+</html>

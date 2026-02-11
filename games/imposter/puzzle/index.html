@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Imposter - Logic Deduction Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #a0a0c0;
+            font-size: 1.2em;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .main-panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .suspect-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .suspect-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .suspect-card.selected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .suspect-card.imposter {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .suspect-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .suspect-trait {
+            font-size: 0.9em;
+            color: #a0a0c0;
+            margin: 2px 0;
+        }
+
+        .clue-panel {
+            margin-bottom: 30px;
+        }
+
+        .clue {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .clue-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .clue-text {
+            color: #c0c0c0;
+            line-height: 1.4;
+        }
+
+        .puzzle-section {
+            margin-bottom: 30px;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .puzzle-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .puzzle-cell:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .puzzle-cell.filled {
+            background: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .status-message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+        }
+
+        .status-message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+        }
+
+        .alibi-section {
+            margin-bottom: 30px;
+        }
+
+        .alibi-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .alibi-person {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .alibi-time {
+            font-size: 0.9em;
+            color: #a0a0c0;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0;
+            border-left: 2px solid #667eea;
+            margin-left: 15px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 15px;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .timeline-event {
+            margin-top: 5px;
+            color: #c0c0c0;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .puzzle-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕵️ Puzzle Imposter</h1>
+            <p class="subtitle">Solve clues and deduce who the imposter is!</p>
+        </header>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div id="status-message" class="status-message" style="display: none;"></div>
+
+        <div class="game-area">
+            <div class="main-panel">
+                <div class="clue-panel">
+                    <h2>🔍 Clues</h2>
+                    <div id="clues"></div>
+                </div>
+
+                <div class="puzzle-section">
+                    <h2>🧩 Logic Puzzle</h2>
+                    <p>Fill in the grid to reveal the imposter's identity. Each row and column must contain exactly one of each symbol.</p>
+                    <div class="puzzle-grid" id="puzzle-grid"></div>
+                    <button class="btn" id="check-puzzle">Check Solution</button>
+                    <button class="btn" id="reset-puzzle">Reset Puzzle</button>
+                </div>
+
+                <div class="alibi-section">
+                    <h2>📋 Alibis & Timeline</h2>
+                    <div class="timeline" id="timeline"></div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h2>👥 Suspects</h2>
+                <p>Click on a suspect to mark them as the imposter:</p>
+                <div id="suspects"></div>
+                <button class="btn" id="accuse-btn" disabled>Accuse Suspect</button>
+                <button class="btn" id="new-case-btn">New Case</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            currentCase: 0,
+            selectedSuspect: null,
+            puzzleSolved: false,
+            cluesRevealed: 0,
+            progress: 0
+        };
+
+        // Case data
+        const cases = [
+            {
+                suspects: [
+                    { id: 1, name: 'Dr. Smith', traits: ['Wears glasses', 'Bald', 'Carries briefcase'], alibi: 'In lab at 8:00 PM' },
+                    { id: 2, name: 'Ms. Johnson', traits: ['Red hair', 'Tattoo', 'Smokes'], alibi: 'At bar at 8:00 PM' },
+                    { id: 3, name: 'Mr. Brown', traits: ['Beard', 'Hat', 'Limp'], alibi: 'Walking dog at 8:00 PM' },
+                    { id: 4, name: 'Mrs. Davis', traits: ['Jewelry', 'Perfume', 'High heels'], alibi: 'At theater at 8:00 PM' }
+                ],
+                imposter: 2,
+                clues: [
+                    { title: 'Security Footage', text: 'A person with red hair was seen near the crime scene at 7:45 PM.' },
+                    { title: 'Witness Statement', text: 'The suspect was wearing a distinctive tattoo on their arm.' },
+                    { title: 'Phone Records', text: 'Someone called the victim from a payphone near the bar.' },
+                    { title: 'DNA Evidence', text: 'Hair fibers found at the scene match someone with red hair.' }
+                ],
+                timeline: [
+                    { time: '7:30 PM', event: 'Victim last seen alive' },
+                    { time: '7:45 PM', event: 'Red-haired person spotted near scene' },
+                    { time: '8:00 PM', event: 'Suspects provide alibis' },
+                    { time: '8:15 PM', event: 'Crime discovered' }
+                ],
+                puzzle: [
+                    ['🔴', '🔵', '🟡'],
+                    ['🔵', '🟡', '🔴'],
+                    ['🟡', '🔴', '🔵']
+                ]
+            },
+            {
+                suspects: [
+                    { id: 1, name: 'Chef Marco', traits: ['Chef hat', 'Mustache', 'Flour on apron'], alibi: 'Cooking in kitchen' },
+                    { id: 2, name: 'Waiter Tom', traits: ['Bow tie', 'Tray', 'Name tag'], alibi: 'Serving tables' },
+                    { id: 3, name: 'Bartender Lisa', traits: ['Cocktail shaker', 'Bar towel', 'Smile'], alibi: 'Mixing drinks' },
+                    { id: 4, name: 'Busboy Carlos', traits: ['Stack of plates', 'Wet rag', 'Sneakers'], alibi: 'Cleaning tables' }
+                ],
+                imposter: 4,
+                clues: [
+                    { title: 'Kitchen Surveillance', text: 'Someone with wet shoes tracked water through the clean kitchen.' },
+                    { title: 'Customer Report', text: 'A busboy was seen arguing with the victim earlier.' },
+                    { title: 'Inventory Check', text: 'Silverware is missing from the storage area.' },
+                    { title: 'Time Card', text: 'One employee clocked out early without permission.' }
+                ],
+                timeline: [
+                    { time: '6:00 PM', event: 'Restaurant opens' },
+                    { time: '7:30 PM', event: 'Argument overheard' },
+                    { time: '8:00 PM', event: 'Silverware goes missing' },
+                    { time: '8:30 PM', event: 'Body discovered in storage' }
+                ],
+                puzzle: [
+                    ['🍽️', '🍷', '👨‍🍳'],
+                    ['👨‍🍳', '🍽️', '🍷'],
+                    ['🍷', '👨‍🍳', '🍽️']
+                ]
+            }
+        ];
+
+        // Initialize game
+        function initGame() {
+            loadCase(0);
+        }
+
+        function loadCase(caseIndex) {
+            gameState.currentCase = caseIndex;
+            gameState.selectedSuspect = null;
+            gameState.puzzleSolved = false;
+            gameState.cluesRevealed = 0;
+            gameState.progress = 0;
+
+            const currentCase = cases[caseIndex];
+            renderSuspects(currentCase.suspects);
+            renderClues(currentCase.clues);
+            renderTimeline(currentCase.timeline);
+            initPuzzle(currentCase.puzzle);
+            updateUI();
+        }
+
+        function renderSuspects(suspects) {
+            const suspectsEl = document.getElementById('suspects');
+            suspectsEl.innerHTML = '';
+
+            suspects.forEach(suspect => {
+                const card = document.createElement('div');
+                card.className = 'suspect-card';
+                card.dataset.id = suspect.id;
+                card.onclick = () => selectSuspect(suspect.id);
+
+                card.innerHTML = `
+                    <div class="suspect-name">${suspect.name}</div>
+                    ${suspect.traits.map(trait => `<div class="suspect-trait">• ${trait}</div>`).join('')}
+                    <div class="suspect-trait"><strong>Alibi:</strong> ${suspect.alibi}</div>
+                `;
+
+                suspectsEl.appendChild(card);
+            });
+        }
+
+        function selectSuspect(id) {
+            gameState.selectedSuspect = id;
+
+            document.querySelectorAll('.suspect-card').forEach(card => {
+                card.classList.remove('selected');
+                if (parseInt(card.dataset.id) === id) {
+                    card.classList.add('selected');
+                }
+            });
+
+            document.getElementById('accuse-btn').disabled = false;
+        }
+
+        function renderClues(clues) {
+            const cluesEl = document.getElementById('clues');
+            cluesEl.innerHTML = '';
+
+            clues.forEach((clue, index) => {
+                const clueEl = document.createElement('div');
+                clueEl.className = 'clue';
+                clueEl.innerHTML = `
+                    <div class="clue-title">${clue.title}</div>
+                    <div class="clue-text">${clue.text}</div>
+                `;
+
+                // Initially hide some clues
+                if (index > 1) {
+                    clueEl.style.display = 'none';
+                } else {
+                    gameState.cluesRevealed++;
+                }
+
+                cluesEl.appendChild(clueEl);
+            });
+
+            // Add button to reveal more clues
+            if (clues.length > 2) {
+                const revealBtn = document.createElement('button');
+                revealBtn.className = 'btn';
+                revealBtn.textContent = 'Reveal More Clues';
+                revealBtn.onclick = () => revealClues(clues);
+                cluesEl.appendChild(revealBtn);
+            }
+        }
+
+        function revealClues(clues) {
+            const hiddenClues = document.querySelectorAll('.clue[style*="display: none"]');
+            if (hiddenClues.length > 0) {
+                hiddenClues[0].style.display = 'block';
+                gameState.cluesRevealed++;
+                updateProgress();
+            }
+        }
+
+        function renderTimeline(timeline) {
+            const timelineEl = document.getElementById('timeline');
+            timelineEl.innerHTML = '';
+
+            timeline.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'timeline-item';
+                itemEl.innerHTML = `
+                    <div class="timeline-time">${item.time}</div>
+                    <div class="timeline-event">${item.event}</div>
+                `;
+                timelineEl.appendChild(itemEl);
+            });
+        }
+
+        function initPuzzle(solution) {
+            const grid = document.getElementById('puzzle-grid');
+            grid.innerHTML = '';
+
+            // Create empty grid
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'puzzle-cell';
+                cell.dataset.index = i;
+                cell.onclick = () => toggleCell(cell);
+                grid.appendChild(cell);
+            }
+
+            gameState.puzzleSolution = solution.flat();
+        }
+
+        function toggleCell(cell) {
+            const symbols = ['🔴', '🔵', '🟡', '🍽️', '🍷', '👨‍🍳'];
+            const currentSymbol = cell.textContent;
+            const currentIndex = symbols.indexOf(currentSymbol);
+            const nextIndex = (currentIndex + 1) % symbols.length;
+            cell.textContent = symbols[nextIndex];
+
+            if (cell.textContent) {
+                cell.classList.add('filled');
+            } else {
+                cell.classList.remove('filled');
+            }
+        }
+
+        function checkPuzzle() {
+            const cells = document.querySelectorAll('.puzzle-cell');
+            const userSolution = Array.from(cells).map(cell => cell.textContent);
+
+            const isCorrect = userSolution.every((symbol, index) =>
+                symbol === gameState.puzzleSolution[index]
+            );
+
+            if (isCorrect) {
+                gameState.puzzleSolved = true;
+                showMessage('Puzzle solved! The symbols reveal the imposter\'s identity.', 'success');
+                updateProgress();
+            } else {
+                showMessage('Not quite right. Keep trying!', 'error');
+            }
+        }
+
+        function resetPuzzle() {
+            document.querySelectorAll('.puzzle-cell').forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('filled');
+            });
+        }
+
+        function accuseSuspect() {
+            if (!gameState.selectedSuspect) return;
+
+            const currentCase = cases[gameState.currentCase];
+            const isCorrect = gameState.selectedSuspect === currentCase.imposter;
+
+            if (isCorrect) {
+                showMessage('Correct! You identified the imposter!', 'success');
+                gameState.progress = 100;
+                updateProgress();
+
+                // Reveal the imposter
+                document.querySelectorAll('.suspect-card').forEach(card => {
+                    if (parseInt(card.dataset.id) === currentCase.imposter) {
+                        card.classList.add('imposter');
+                    }
+                });
+
+                setTimeout(() => {
+                    if (gameState.currentCase < cases.length - 1) {
+                        loadCase(gameState.currentCase + 1);
+                    } else {
+                        showMessage('Congratulations! You solved all cases!', 'success');
+                    }
+                }, 3000);
+            } else {
+                showMessage('Wrong suspect! Keep investigating.', 'error');
+                gameState.progress = Math.max(0, gameState.progress - 10);
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            // Calculate progress based on clues revealed, puzzle solved, etc.
+            let progress = 0;
+            progress += (gameState.cluesRevealed / 4) * 40; // 40% for clues
+            if (gameState.puzzleSolved) progress += 30; // 30% for puzzle
+            if (gameState.selectedSuspect) progress += 30; // 30% for making accusation
+
+            gameState.progress = Math.min(100, progress);
+            document.getElementById('progress-fill').style.width = gameState.progress + '%';
+        }
+
+        function updateUI() {
+            updateProgress();
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('status-message');
+            messageEl.textContent = text;
+            messageEl.className = `status-message ${type}`;
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('accuse-btn').onclick = accuseSuspect;
+        document.getElementById('new-case-btn').onclick = () => loadCase(0);
+        document.getElementById('check-puzzle').onclick = checkPuzzle;
+        document.getElementById('reset-puzzle').onclick = resetPuzzle;
+
+        // Initialize
+        initGame();
+    </script>
+</body>
+</html>

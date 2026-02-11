@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Imposter - Advanced Social Deduction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .main-panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .role-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .role-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .role-description {
+            font-size: 1.1em;
+            color: #c0c0c0;
+            margin-bottom: 15px;
+        }
+
+        .ability-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .ability-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .ability-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .ability-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .ability-desc {
+            font-size: 0.9em;
+            color: #a0a0c0;
+        }
+
+        .players-section {
+            margin-top: 30px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .player-card:hover {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .player-card.selected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .player-card.dead {
+            opacity: 0.5;
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+
+        .player-avatar {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-role-display {
+            font-size: 0.8em;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .player-status {
+            font-size: 0.7em;
+            color: #999;
+        }
+
+        .action-panel {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.danger {
+            background: linear-gradient(45deg, #f44336, #e53935);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .sidebar {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .game-info {
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .abilities-panel {
+            margin-bottom: 25px;
+        }
+
+        .ability-uses {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .ability-uses span:last-child {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .use-ability-btn {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .chat-panel {
+            margin-top: 25px;
+        }
+
+        .chat-messages {
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .chat-input::placeholder {
+            color: #ccc;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            animation: slideIn 0.5s ease;
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.9);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .game-over h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .role-reveal {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .role-reveal h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .final-roles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .final-role {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .players-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ability-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 Role Imposter</h1>
+            <p>Advanced social deduction with special roles and abilities</p>
+        </header>
+
+        <div class="game-layout">
+            <div class="main-panel">
+                <div class="role-header" id="role-header">
+                    <!-- Role info will be populated by JavaScript -->
+                </div>
+
+                <div class="players-section">
+                    <h2>👥 Players</h2>
+                    <div class="players-grid" id="players-grid">
+                        <!-- Players will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="action-panel" id="action-panel">
+                    <!-- Action buttons will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="game-info">
+                    <div class="info-item">
+                        <span>Phase:</span>
+                        <span id="game-phase">Discussion</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Alive:</span>
+                        <span id="alive-count">10</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Round:</span>
+                        <span id="round-number">1</span>
+                    </div>
+                </div>
+
+                <div class="abilities-panel" id="abilities-panel">
+                    <!-- Abilities will be populated by JavaScript -->
+                </div>
+
+                <div class="chat-panel">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message"><strong>System:</strong> Welcome to Role Imposter! Each player has special abilities.</div>
+                    </div>
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Discuss with the crew..." maxlength="100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            phase: 'discussion', // 'discussion', 'voting', 'results'
+            round: 1,
+            players: [],
+            playerRole: null,
+            selectedPlayer: null,
+            votes: {},
+            abilitiesUsed: {}
+        };
+
+        // Role definitions
+        const roles = {
+            crew: {
+                detective: {
+                    name: 'Detective',
+                    team: 'crew',
+                    description: 'Can investigate players to learn their roles.',
+                    abilities: {
+                        investigate: {
+                            name: 'Investigate',
+                            description: 'Learn if a player is Crew or Imposter',
+                            uses: 3,
+                            action: 'investigate'
+                        }
+                    },
+                    color: '#4CAF50'
+                },
+                medic: {
+                    name: 'Medic',
+                    team: 'crew',
+                    description: 'Can protect players from being killed.',
+                    abilities: {
+                        protect: {
+                            name: 'Protect',
+                            description: 'Shield a player from imposter attacks',
+                            uses: 2,
+                            action: 'protect'
+                        }
+                    },
+                    color: '#2196F3'
+                },
+                engineer: {
+                    name: 'Engineer',
+                    team: 'crew',
+                    description: 'Can repair sabotaged systems.',
+                    abilities: {
+                        repair: {
+                            name: 'Repair',
+                            description: 'Fix sabotaged systems',
+                            uses: 1,
+                            action: 'repair'
+                        }
+                    },
+                    color: '#FF9800'
+                }
+            },
+            imposter: {
+                saboteur: {
+                    name: 'Saboteur',
+                    team: 'imposter',
+                    description: 'Can sabotage systems to create chaos.',
+                    abilities: {
+                        sabotage: {
+                            name: 'Sabotage',
+                            description: 'Disable lights or doors',
+                            uses: 2,
+                            action: 'sabotage'
+                        },
+                        kill: {
+                            name: 'Kill',
+                            description: 'Eliminate a crew member',
+                            uses: 999,
+                            action: 'kill'
+                        }
+                    },
+                    color: '#f44336'
+                },
+                shapeshifter: {
+                    name: 'Shapeshifter',
+                    team: 'imposter',
+                    description: 'Can disguise as other players.',
+                    abilities: {
+                        disguise: {
+                            name: 'Disguise',
+                            description: 'Appear as another player',
+                            uses: 1,
+                            action: 'disguise'
+                        },
+                        kill: {
+                            name: 'Kill',
+                            description: 'Eliminate a crew member',
+                            uses: 999,
+                            action: 'kill'
+                        }
+                    },
+                    color: '#9C27B0'
+                }
+            }
+        };
+
+        // Initialize players with roles
+        function initPlayers() {
+            const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+            const avatars = ['👩', '👨', '👦', '👩‍🦰', '👨‍🦱', '👩‍🦳', '👨‍🦲', '👩‍🦱', '👨‍🦰', '👩‍🦱'];
+
+            // Assign roles
+            const crewRoles = ['detective', 'medic', 'engineer'];
+            const imposterRoles = ['saboteur', 'shapeshifter'];
+
+            // Player (index 0) gets a random crew role
+            const playerCrewRole = crewRoles[Math.floor(Math.random() * crewRoles.length)];
+            gameState.players.push({
+                id: 0,
+                name: 'You',
+                role: roles.crew[playerCrewRole],
+                alive: true,
+                avatar: avatars[0],
+                protected: false,
+                disguised: false
+            });
+
+            gameState.playerRole = gameState.players[0].role;
+
+            // Create other players
+            for (let i = 1; i < 10; i++) {
+                let role;
+                if (i < 3) {
+                    // Imposters
+                    const imposterRole = imposterRoles[Math.floor(Math.random() * imposterRoles.length)];
+                    role = roles.imposter[imposterRole];
+                } else {
+                    // Crew
+                    const crewRole = crewRoles[Math.floor(Math.random() * crewRoles.length)];
+                    role = roles.crew[crewRole];
+                }
+
+                gameState.players.push({
+                    id: i,
+                    name: names[i],
+                    role: role,
+                    alive: true,
+                    avatar: avatars[i],
+                    protected: false,
+                    disguised: false
+                });
+            }
+
+            // Initialize ability usage tracking
+            gameState.abilitiesUsed = {};
+            Object.keys(gameState.playerRole.abilities).forEach(ability => {
+                gameState.abilitiesUsed[ability] = 0;
+            });
+        }
+
+        // Render role header
+        function renderRoleHeader() {
+            const header = document.getElementById('role-header');
+            const role = gameState.playerRole;
+
+            header.innerHTML = `
+                <div class="role-title">${role.name}</div>
+                <div class="role-description">${role.description}</div>
+                <div class="ability-list">
+                    ${Object.values(role.abilities).map(ability => `
+                        <div class="ability-card">
+                            <div class="ability-name">${ability.name}</div>
+                            <div class="ability-desc">${ability.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            header.style.borderLeft = `5px solid ${role.color}`;
+        }
+
+        // Render players
+        function renderPlayers() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
+
+            gameState.players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = `player-card ${player.alive ? '' : 'dead'} ${gameState.selectedPlayer === player.id ? 'selected' : ''}`;
+                card.onclick = () => selectPlayer(player.id);
+
+                const displayRole = player.id === 0 ? player.role.name : '???';
+                const status = player.protected ? 'Protected' : player.disguised ? 'Disguised' : '';
+
+                card.innerHTML = `
+                    <div class="player-avatar">${player.avatar}</div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-role-display">${displayRole}</div>
+                    <div class="player-status">${status}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Render abilities panel
+        function renderAbilities() {
+            const panel = document.getElementById('abilities-panel');
+            const role = gameState.playerRole;
+
+            panel.innerHTML = '<h3>🛠️ Abilities</h3>';
+
+            Object.entries(role.abilities).forEach(([key, ability]) => {
+                const usesLeft = ability.uses - (gameState.abilitiesUsed[key] || 0);
+                const canUse = usesLeft > 0 && gameState.phase === 'discussion';
+
+                panel.innerHTML += `
+                    <div class="ability-uses">
+                        <span>${ability.name}</span>
+                        <span>${usesLeft}/${ability.uses}</span>
+                    </div>
+                    <button class="btn use-ability-btn ${key}" ${canUse ? '' : 'disabled'}>
+                        Use ${ability.name}
+                    </button>
+                `;
+            });
+        }
+
+        // Select player
+        function selectPlayer(playerId) {
+            gameState.selectedPlayer = playerId;
+            renderPlayers();
+        }
+
+        // Use ability
+        function useAbility(abilityKey) {
+            if (!gameState.selectedPlayer && gameState.selectedPlayer !== 0) {
+                showNotification('Select a player first!', 'error');
+                return;
+            }
+
+            const ability = gameState.playerRole.abilities[abilityKey];
+            const target = gameState.players[gameState.selectedPlayer];
+
+            if (!target || !target.alive) {
+                showNotification('Target must be alive!', 'error');
+                return;
+            }
+
+            // Execute ability
+            switch (ability.action) {
+                case 'investigate':
+                    const isImposter = target.role.team === 'imposter';
+                    showNotification(`${target.name} is ${isImposter ? 'an Imposter' : 'Crew'}!`, 'success');
+                    addChatMessage('System', `You investigated ${target.name}.`);
+                    break;
+
+                case 'protect':
+                    target.protected = true;
+                    showNotification(`${target.name} is now protected!`, 'success');
+                    addChatMessage('System', `You protected ${target.name}.`);
+                    break;
+
+                case 'repair':
+                    // Simulate repairing systems
+                    showNotification('Systems repaired!', 'success');
+                    addChatMessage('System', 'You repaired the sabotaged systems.');
+                    break;
+
+                case 'sabotage':
+                    // Simulate sabotage
+                    showNotification('Systems sabotaged!', 'success');
+                    addChatMessage('System', 'Systems have been sabotaged!');
+                    break;
+
+                case 'disguise':
+                    // Shapeshifter disguise
+                    gameState.players[0].avatar = target.avatar;
+                    gameState.players[0].disguised = true;
+                    showNotification(`Disguised as ${target.name}!`, 'success');
+                    renderPlayers();
+                    break;
+
+                case 'kill':
+                    if (!target.protected) {
+                        target.alive = false;
+                        showNotification(`${target.name} has been eliminated!`, 'success');
+                        addChatMessage('System', `${target.name} was found dead!`);
+                        checkWinCondition();
+                    } else {
+                        showNotification('Target was protected!', 'error');
+                        target.protected = false;
+                    }
+                    break;
+            }
+
+            gameState.abilitiesUsed[abilityKey] = (gameState.abilitiesUsed[abilityKey] || 0) + 1;
+            renderAbilities();
+            gameState.selectedPlayer = null;
+            renderPlayers();
+        }
+
+        // Render action buttons
+        function renderActionButtons() {
+            const panel = document.getElementById('action-panel');
+
+            if (gameState.phase === 'discussion') {
+                panel.innerHTML = `
+                    <button class="btn secondary" id="call-meeting-btn">Call Emergency Meeting</button>
+                    <button class="btn" id="start-voting-btn">Start Voting</button>
+                `;
+            } else if (gameState.phase === 'voting') {
+                panel.innerHTML = `
+                    <button class="btn" id="vote-btn">Vote to Eject</button>
+                    <button class="btn secondary" id="skip-vote-btn">Skip Vote</button>
+                `;
+            } else if (gameState.phase === 'results') {
+                panel.innerHTML = `
+                    <button class="btn" id="next-round-btn">Next Round</button>
+                `;
+            }
+        }
+
+        // Start voting phase
+        function startVoting() {
+            gameState.phase = 'voting';
+            document.getElementById('game-phase').textContent = 'Voting';
+            renderActionButtons();
+            addChatMessage('System', 'Voting phase! Choose who to eject.');
+        }
+
+        // Handle voting
+        function handleVote() {
+            if (gameState.selectedPlayer === null) {
+                showNotification('Select a player to vote for!', 'error');
+                return;
+            }
+
+            // Simple voting logic
+            gameState.votes = {};
+            gameState.players.forEach(player => {
+                if (player.alive) {
+                    // AI voting logic
+                    let voteFor = gameState.selectedPlayer; // For simplicity, everyone votes with player
+                    gameState.votes[voteFor] = (gameState.votes[voteFor] || 0) + 1;
+                }
+            });
+
+            showVotingResults();
+        }
+
+        function showVotingResults() {
+            gameState.phase = 'results';
+            document.getElementById('game-phase').textContent = 'Results';
+
+            // Find player with most votes
+            let maxVotes = 0;
+            let ejectedPlayer = null;
+            for (const [playerId, votes] of Object.entries(gameState.votes)) {
+                if (votes > maxVotes) {
+                    maxVotes = votes;
+                    ejectedPlayer = parseInt(playerId);
+                }
+            }
+
+            if (ejectedPlayer !== null) {
+                const player = gameState.players[ejectedPlayer];
+                player.alive = false;
+                addChatMessage('System', `${player.name} was ejected! They were ${player.role.name} (${player.role.team})!`);
+                checkWinCondition();
+            } else {
+                addChatMessage('System', 'No one was ejected.');
+            }
+
+            renderActionButtons();
+        }
+
+        function nextRound() {
+            gameState.round++;
+            gameState.phase = 'discussion';
+            document.getElementById('game-phase').textContent = 'Discussion';
+            document.getElementById('round-number').textContent = gameState.round;
+
+            // Reset protections and disguises
+            gameState.players.forEach(player => {
+                player.protected = false;
+                player.disguised = false;
+            });
+
+            gameState.selectedPlayer = null;
+            renderPlayers();
+            renderActionButtons();
+            addChatMessage('System', `Round ${gameState.round} begins!`);
+        }
+
+        function checkWinCondition() {
+            const alivePlayers = gameState.players.filter(p => p.alive);
+            const aliveCrew = alivePlayers.filter(p => p.role.team === 'crew');
+            const aliveImposters = alivePlayers.filter(p => p.role.team === 'imposter');
+
+            if (aliveImposters.length === 0) {
+                endGame('Crew Victory!', 'All imposters have been eliminated!');
+            } else if (aliveImposters.length >= aliveCrew.length) {
+                endGame('Imposter Victory!', 'Imposters have taken over!');
+            }
+        }
+
+        function endGame(title, message) {
+            const overlay = document.createElement('div');
+            overlay.className = 'game-over';
+            overlay.innerHTML = `
+                <h2>${title}</h2>
+                <div class="role-reveal">
+                    <h3>Role Reveal</h3>
+                    <div class="final-roles">
+                        ${gameState.players.map(player => `
+                            <div class="final-role">
+                                <div>${player.name}</div>
+                                <div style="color: ${player.role.color}">${player.role.name}</div>
+                                <div style="font-size: 0.8em; color: #ccc">${player.alive ? 'Alive' : 'Dead'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <p>${message}</p>
+                <button class="btn" onclick="location.reload()">Play Again</button>
+            `;
+
+            document.body.appendChild(overlay);
+        }
+
+        // Chat system
+        function addChatMessage(sender, message) {
+            const messages = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'chat-message';
+            messageEl.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const message = e.target.value.trim();
+                if (message) {
+                    addChatMessage('You', message);
+                    e.target.value = '';
+
+                    // AI responses
+                    setTimeout(() => {
+                        const responses = ['I suspect them!', 'Trust me, I\'m crew!', 'Let\'s vote them out!', 'I used my ability!'];
+                        const alivePlayers = gameState.players.filter(p => p.alive && p.id !== 0);
+                        if (alivePlayers.length > 0) {
+                            const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+                            addChatMessage(randomPlayer.name, responses[Math.floor(Math.random() * responses.length)]);
+                        }
+                    }, 1000 + Math.random() * 2000);
+                }
+            }
+        });
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'call-meeting-btn') {
+                startVoting();
+            } else if (e.target.id === 'start-voting-btn') {
+                startVoting();
+            } else if (e.target.id === 'vote-btn') {
+                handleVote();
+            } else if (e.target.id === 'skip-vote-btn') {
+                showVotingResults();
+            } else if (e.target.id === 'next-round-btn') {
+                nextRound();
+            } else if (e.target.classList.contains('use-ability-btn')) {
+                const abilityKey = e.target.classList[1];
+                useAbility(abilityKey);
+            }
+        });
+
+        // Update alive count
+        function updateAliveCount() {
+            const aliveCount = gameState.players.filter(p => p.alive).length;
+            document.getElementById('alive-count').textContent = aliveCount;
+        }
+
+        // Initialize game
+        function initGame() {
+            initPlayers();
+            renderRoleHeader();
+            renderPlayers();
+            renderAbilities();
+            renderActionButtons();
+            updateAliveCount();
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

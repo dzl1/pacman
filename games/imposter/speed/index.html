@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Imposter - Fast-Paced Social Deduction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff4757 100%);
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid #ff4757;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+            color: #ff4757;
+        }
+
+        .timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff6b6b;
+        }
+
+        .game-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .main-game {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .round-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .round-number {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .phase-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .player-card:hover {
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+        }
+
+        .player-card.selected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .player-card.dead {
+            opacity: 0.5;
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+
+        .player-avatar {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-role {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-panel {
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            max-height: 200px;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .chat-input::placeholder {
+            color: #ccc;
+        }
+
+        .voting-results {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .vote-bar {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .vote-name {
+            flex: 1;
+            text-align: left;
+        }
+
+        .vote-count {
+            margin-left: 10px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .urgent-timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            font-weight: bold;
+            color: #ff4757;
+            text-shadow: 0 0 20px #ff4757;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .final-stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+
+            .players-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>⚡ Speed Imposter</h1>
+            <div class="timer" id="timer">30</div>
+        </div>
+
+        <div class="game-area">
+            <div class="main-game">
+                <div class="round-info">
+                    <div class="round-number">Round <span id="round-number">1</span></div>
+                    <div class="phase-title" id="phase-title">Discussion Phase</div>
+                </div>
+
+                <div class="players-grid" id="players-grid">
+                    <!-- Players will be populated by JavaScript -->
+                </div>
+
+                <div class="action-buttons" id="action-buttons">
+                    <!-- Buttons will be populated by JavaScript -->
+                </div>
+
+                <div class="voting-results" id="voting-results" style="display: none;">
+                    <h3>Voting Results</h3>
+                    <div id="vote-bars"></div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="status-panel">
+                    <div class="status-item">
+                        <span>Alive:</span>
+                        <span id="alive-count">10</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Your Role:</span>
+                        <span id="player-role">Crew</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Round:</span>
+                        <span id="current-round">1/5</span>
+                    </div>
+                </div>
+
+                <div class="chat-panel">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message"><strong>System:</strong> Welcome to Speed Imposter! Quick rounds, fast decisions!</div>
+                    </div>
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Quick chat..." maxlength="50">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            phase: 'discussion', // 'discussion', 'voting', 'results', 'gameOver'
+            round: 1,
+            timeLeft: 30,
+            players: [],
+            playerRole: 'crew',
+            selectedPlayer: null,
+            votes: {},
+            gameTimer: null,
+            urgentTimer: null
+        };
+
+        // Initialize players
+        function initPlayers() {
+            const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+            const imposters = [2, 7]; // Players 2 and 7 are imposters
+
+            gameState.players = names.map((name, index) => ({
+                id: index,
+                name: name,
+                role: imposters.includes(index) ? 'imposter' : 'crew',
+                alive: true,
+                avatar: ['👩', '👨', '👦', '👩‍🦰', '👨‍🦱', '👩‍🦳', '👨‍🦲', '👩‍🦱', '👨‍🦰', '👩‍🦱'][index],
+                voted: false
+            }));
+
+            // Set player role (player is always index 0)
+            gameState.playerRole = gameState.players[0].role;
+            document.getElementById('player-role').textContent = gameState.playerRole.charAt(0).toUpperCase() + gameState.playerRole.slice(1);
+        }
+
+        // Render players
+        function renderPlayers() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
+
+            gameState.players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = `player-card ${player.alive ? '' : 'dead'} ${gameState.selectedPlayer === player.id ? 'selected' : ''}`;
+                card.onclick = () => selectPlayer(player.id);
+
+                card.innerHTML = `
+                    <div class="player-avatar">${player.avatar}</div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-role">${player.alive ? (player.role === 'imposter' ? '???' : 'Crew') : 'Dead'}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Select player for voting or killing
+        function selectPlayer(playerId) {
+            if (gameState.phase === 'discussion' || gameState.phase === 'voting') {
+                gameState.selectedPlayer = playerId;
+                renderPlayers();
+            }
+        }
+
+        // Render action buttons based on phase
+        function renderActionButtons() {
+            const buttons = document.getElementById('action-buttons');
+            buttons.innerHTML = '';
+
+            if (gameState.phase === 'discussion') {
+                if (gameState.playerRole === 'imposter') {
+                    buttons.innerHTML = `
+                        <button class="btn" id="kill-btn">Kill Player</button>
+                        <button class="btn secondary" id="call-meeting-btn">Emergency Meeting</button>
+                    `;
+                } else {
+                    buttons.innerHTML = `
+                        <button class="btn secondary" id="call-meeting-btn">Emergency Meeting</button>
+                    `;
+                }
+            } else if (gameState.phase === 'voting') {
+                buttons.innerHTML = `
+                    <button class="btn" id="vote-btn">Vote to Eject</button>
+                    <button class="btn secondary" id="skip-vote-btn">Skip Vote</button>
+                `;
+            } else if (gameState.phase === 'results') {
+                buttons.innerHTML = `
+                    <button class="btn" id="next-round-btn">Next Round</button>
+                `;
+            }
+        }
+
+        // Start timer
+        function startTimer(duration) {
+            gameState.timeLeft = duration;
+            updateTimerDisplay();
+
+            if (gameState.gameTimer) clearInterval(gameState.gameTimer);
+
+            gameState.gameTimer = setInterval(() => {
+                gameState.timeLeft--;
+
+                if (gameState.timeLeft <= 5 && gameState.timeLeft > 0) {
+                    showUrgentTimer();
+                } else {
+                    hideUrgentTimer();
+                }
+
+                if (gameState.timeLeft <= 0) {
+                    nextPhase();
+                }
+
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = gameState.timeLeft;
+        }
+
+        function showUrgentTimer() {
+            if (!gameState.urgentTimer) {
+                const urgent = document.createElement('div');
+                urgent.className = 'urgent-timer';
+                urgent.textContent = gameState.timeLeft;
+                document.body.appendChild(urgent);
+                gameState.urgentTimer = urgent;
+            } else {
+                gameState.urgentTimer.textContent = gameState.timeLeft;
+            }
+        }
+
+        function hideUrgentTimer() {
+            if (gameState.urgentTimer) {
+                gameState.urgentTimer.remove();
+                gameState.urgentTimer = null;
+            }
+        }
+
+        // Phase management
+        function nextPhase() {
+            hideUrgentTimer();
+
+            if (gameState.phase === 'discussion') {
+                startVotingPhase();
+            } else if (gameState.phase === 'voting') {
+                showVotingResults();
+            } else if (gameState.phase === 'results') {
+                nextRound();
+            }
+        }
+
+        function startVotingPhase() {
+            gameState.phase = 'voting';
+            document.getElementById('phase-title').textContent = 'Voting Phase';
+            gameState.selectedPlayer = null;
+            renderPlayers();
+            renderActionButtons();
+            startTimer(15); // 15 seconds for voting
+            addChatMessage('System', 'Voting time! Choose who to eject.');
+        }
+
+        function showVotingResults() {
+            gameState.phase = 'results';
+            document.getElementById('phase-title').textContent = 'Results';
+
+            // Count votes
+            gameState.votes = {};
+            gameState.players.forEach(player => {
+                if (player.alive) {
+                    // Simple AI voting - crew votes for suspected imposters, imposters vote randomly
+                    let voteFor = null;
+                    if (player.role === 'crew') {
+                        // Crew votes for players who haven't spoken much or seem suspicious
+                        const alivePlayers = gameState.players.filter(p => p.alive && p.id !== player.id);
+                        voteFor = alivePlayers[Math.floor(Math.random() * alivePlayers.length)].id;
+                    } else {
+                        // Imposters vote randomly or for crew
+                        const crewPlayers = gameState.players.filter(p => p.alive && p.role === 'crew' && p.id !== player.id);
+                        if (crewPlayers.length > 0) {
+                            voteFor = crewPlayers[Math.floor(Math.random() * crewPlayers.length)].id;
+                        }
+                    }
+
+                    if (voteFor !== null) {
+                        gameState.votes[voteFor] = (gameState.votes[voteFor] || 0) + 1;
+                    }
+                }
+            });
+
+            // Find player with most votes
+            let maxVotes = 0;
+            let ejectedPlayer = null;
+            for (const [playerId, votes] of Object.entries(gameState.votes)) {
+                if (votes > maxVotes) {
+                    maxVotes = votes;
+                    ejectedPlayer = parseInt(playerId);
+                }
+            }
+
+            // Show results
+            renderVotingResults();
+
+            if (ejectedPlayer !== null) {
+                const player = gameState.players[ejectedPlayer];
+                player.alive = false;
+                addChatMessage('System', `${player.name} was ejected! They were ${player.role === 'imposter' ? 'an Imposter' : 'Crew'}!`);
+
+                // Check win conditions
+                checkWinCondition();
+            } else {
+                addChatMessage('System', 'No one was ejected. Discussion continues.');
+            }
+
+            renderActionButtons();
+            startTimer(5); // 5 seconds to show results
+        }
+
+        function renderVotingResults() {
+            const results = document.getElementById('voting-results');
+            const bars = document.getElementById('vote-bars');
+            bars.innerHTML = '';
+
+            gameState.players.forEach(player => {
+                if (player.alive) {
+                    const votes = gameState.votes[player.id] || 0;
+                    const bar = document.createElement('div');
+                    bar.className = 'vote-bar';
+                    bar.innerHTML = `
+                        <span class="vote-name">${player.name}</span>
+                        <span class="vote-count">${votes}</span>
+                    `;
+                    bars.appendChild(bar);
+                }
+            });
+
+            results.style.display = 'block';
+        }
+
+        function nextRound() {
+            gameState.round++;
+            gameState.phase = 'discussion';
+            document.getElementById('phase-title').textContent = 'Discussion Phase';
+            document.getElementById('round-number').textContent = gameState.round;
+            document.getElementById('current-round').textContent = `${gameState.round}/5`;
+            document.getElementById('voting-results').style.display = 'none';
+
+            // Reset voting
+            gameState.players.forEach(player => player.voted = false);
+            gameState.selectedPlayer = null;
+
+            renderPlayers();
+            renderActionButtons();
+            startTimer(30); // 30 seconds for discussion
+
+            addChatMessage('System', `Round ${gameState.round} begins! Discuss and decide who to vote out.`);
+        }
+
+        function checkWinCondition() {
+            const alivePlayers = gameState.players.filter(p => p.alive);
+            const aliveCrew = alivePlayers.filter(p => p.role === 'crew');
+            const aliveImposters = alivePlayers.filter(p => p.role === 'imposter');
+
+            if (aliveImposters.length === 0) {
+                endGame('Crew Victory!', 'All imposters have been eliminated!');
+            } else if (aliveImposters.length >= aliveCrew.length) {
+                endGame('Imposter Victory!', 'Imposters have taken over!');
+            }
+        }
+
+        function endGame(title, message) {
+            clearInterval(gameState.gameTimer);
+            hideUrgentTimer();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'game-over';
+            overlay.innerHTML = `
+                <h2>${title}</h2>
+                <div class="final-stats">
+                    <p>${message}</p>
+                    <p>Rounds completed: ${gameState.round}</p>
+                    <p>Final score: ${calculateScore()}</p>
+                </div>
+                <button class="btn" onclick="location.reload()">Play Again</button>
+            `;
+
+            document.body.appendChild(overlay);
+        }
+
+        function calculateScore() {
+            const aliveCrew = gameState.players.filter(p => p.alive && p.role === 'crew').length;
+            const roundsBonus = gameState.round * 100;
+            return aliveCrew * 500 + roundsBonus;
+        }
+
+        // Chat system
+        function addChatMessage(sender, message) {
+            const messages = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'chat-message';
+            messageEl.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const message = e.target.value.trim();
+                if (message) {
+                    addChatMessage('You', message);
+                    e.target.value = '';
+
+                    // AI responses
+                    setTimeout(() => {
+                        const responses = ['I think it\'s them!', 'No way, trust me!', 'Let\'s vote them out!', 'I\'m innocent!'];
+                        const alivePlayers = gameState.players.filter(p => p.alive && p.id !== 0);
+                        if (alivePlayers.length > 0) {
+                            const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+                            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                            addChatMessage(randomPlayer.name, randomResponse);
+                        }
+                    }, 500 + Math.random() * 1000);
+                }
+            }
+        });
+
+        // Button event handlers
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'kill-btn' && gameState.playerRole === 'imposter' && gameState.selectedPlayer !== null) {
+                const target = gameState.players[gameState.selectedPlayer];
+                if (target && target.alive && target.role !== 'imposter') {
+                    target.alive = false;
+                    addChatMessage('System', `${target.name} was found dead!`);
+                    checkWinCondition();
+                    gameState.selectedPlayer = null;
+                    renderPlayers();
+                }
+            } else if (e.target.id === 'call-meeting-btn') {
+                startVotingPhase();
+            } else if (e.target.id === 'vote-btn' && gameState.selectedPlayer !== null) {
+                // Player vote is handled in voting phase
+                nextPhase();
+            } else if (e.target.id === 'skip-vote-btn') {
+                nextPhase();
+            } else if (e.target.id === 'next-round-btn') {
+                nextPhase();
+            }
+        });
+
+        // Update alive count
+        function updateAliveCount() {
+            const aliveCount = gameState.players.filter(p => p.alive).length;
+            document.getElementById('alive-count').textContent = aliveCount;
+        }
+
+        // Initialize game
+        function initGame() {
+            initPlayers();
+            renderPlayers();
+            renderActionButtons();
+            updateAliveCount();
+            startTimer(30); // Start with discussion phase
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

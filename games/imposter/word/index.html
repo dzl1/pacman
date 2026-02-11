@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Imposter - Linguistic Social Deduction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .main-panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .word-reveal {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .secret-word {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .word-hint {
+            font-size: 1.1em;
+            color: #c0c0c0;
+        }
+
+        .players-section {
+            margin-bottom: 30px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .player-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .player-card.selected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .player-card.eliminated {
+            opacity: 0.5;
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+
+        .player-card.imposter {
+            border-color: #ff9800;
+            background: rgba(255, 152, 0, 0.2);
+        }
+
+        .player-avatar {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-status {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+
+        .discussion-section {
+            margin-bottom: 30px;
+        }
+
+        .discussion-log {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .chat-message.own {
+            background: rgba(102, 126, 234, 0.2);
+            border-left: 3px solid #667eea;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .chat-input::placeholder {
+            color: #ccc;
+        }
+
+        .action-panel {
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.danger {
+            background: linear-gradient(45deg, #f44336, #e53935);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .sidebar {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .game-info {
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            animation: slideIn 0.5s ease;
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.9);
+        }
+
+        .notification.warning {
+            background: rgba(255, 152, 0, 0.9);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .game-over h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .role-reveal {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .final-roles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .final-role {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .players-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Word Imposter</h1>
+            <p>Describe your word without saying it - find the imposter!</p>
+        </header>
+
+        <div class="game-layout">
+            <div class="main-panel">
+                <div class="word-reveal" id="word-reveal">
+                    <!-- Word will be revealed here -->
+                </div>
+
+                <div class="players-section">
+                    <h2>👥 Players</h2>
+                    <div class="players-grid" id="players-grid">
+                        <!-- Players will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="discussion-section">
+                    <h2>💬 Discussion</h2>
+                    <div class="discussion-log" id="discussion-log">
+                        <div class="chat-message"><strong>System:</strong> Welcome to Word Imposter! Take turns describing your word without saying it directly.</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="chat-input" placeholder="Describe your word..." maxlength="200">
+                        <button class="btn secondary" id="send-btn">Send</button>
+                    </div>
+                </div>
+
+                <div class="action-panel" id="action-panel">
+                    <!-- Action buttons will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="game-info">
+                    <div class="info-item">
+                        <span>Phase:</span>
+                        <span id="game-phase">Setup</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Round:</span>
+                        <span id="round-number">1</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Alive:</span>
+                        <span id="alive-count">8</span>
+                    </div>
+                </div>
+
+                <div class="timer-display" id="timer-display" style="display: none;">
+                    60
+                </div>
+
+                <div class="rules-panel">
+                    <h3>📋 How to Play</h3>
+                    <ul style="font-size: 0.9em; color: #ccc; line-height: 1.4;">
+                        <li>• Most players get the same secret word</li>
+                        <li>• One player gets a different word (the imposter)</li>
+                        <li>• Describe your word without saying it</li>
+                        <li>• Vote to eliminate who you think is the imposter</li>
+                        <li>• Imposter wins by not being caught!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            phase: 'setup', // 'setup', 'discussion', 'voting', 'results'
+            round: 1,
+            players: [],
+            playerRole: null,
+            selectedPlayer: null,
+            votes: {},
+            secretWord: '',
+            imposterWord: '',
+            discussionTime: 60,
+            timer: null
+        };
+
+        // Word categories and words
+        const wordCategories = {
+            animals: ['elephant', 'giraffe', 'penguin', 'dolphin', 'butterfly', 'octopus', 'kangaroo', 'flamingo'],
+            food: ['pizza', 'sushi', 'pancakes', 'burrito', 'croissant', 'lasagna', 'tiramisu', 'pad thai'],
+            sports: ['basketball', 'surfing', 'skateboarding', 'volleyball', 'badminton', 'snowboarding', 'gymnastics'],
+            technology: ['smartphone', 'laptop', 'drone', 'virtual reality', 'artificial intelligence', 'blockchain', 'quantum computer'],
+            professions: ['astronaut', 'detective', 'chef', 'architect', 'photographer', 'scientist', 'musician'],
+            nature: ['waterfall', 'volcano', 'rainbow', 'lightning', 'coral reef', 'glacier', 'desert oasis'],
+            entertainment: ['superhero', 'time travel', 'magic show', 'detective mystery', 'space opera', 'musical comedy']
+        };
+
+        // Initialize players
+        function initPlayers() {
+            const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry'];
+            const avatars = ['👩', '👨', '👦', '👩‍🦰', '👨‍🦱', '👩‍🦳', '👨‍🦲', '👩‍🦱'];
+
+            // Select random category and words
+            const categories = Object.keys(wordCategories);
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            const words = wordCategories[randomCategory];
+
+            gameState.secretWord = words[Math.floor(Math.random() * words.length)];
+
+            // Create imposter word (different from secret word)
+            let imposterWord;
+            do {
+                imposterWord = words[Math.floor(Math.random() * words.length)];
+            } while (imposterWord === gameState.secretWord);
+            gameState.imposterWord = imposterWord;
+
+            // Create players
+            names.forEach((name, index) => {
+                const isImposter = index === Math.floor(Math.random() * names.length); // Random imposter
+                const player = {
+                    id: index,
+                    name: name,
+                    avatar: avatars[index],
+                    isImposter: isImposter,
+                    word: isImposter ? gameState.imposterWord : gameState.secretWord,
+                    alive: true,
+                    eliminated: false
+                };
+
+                gameState.players.push(player);
+
+                // Set player role if this is the current player (index 0)
+                if (index === 0) {
+                    gameState.playerRole = player;
+                }
+            });
+        }
+
+        // Render word reveal
+        function renderWordReveal() {
+            const reveal = document.getElementById('word-reveal');
+            const player = gameState.playerRole;
+
+            if (gameState.phase === 'setup') {
+                reveal.innerHTML = `
+                    <div class="secret-word">Get Ready!</div>
+                    <div class="word-hint">The game will begin shortly...</div>
+                `;
+            } else {
+                reveal.innerHTML = `
+                    <div class="secret-word">${player.word}</div>
+                    <div class="word-hint">${player.isImposter ? '(You are the Imposter!)' : '(Describe this word without saying it)'}</div>
+                `;
+            }
+        }
+
+        // Render players
+        function renderPlayers() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
+
+            gameState.players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = `player-card ${player.eliminated ? 'eliminated' : ''} ${gameState.selectedPlayer === player.id ? 'selected' : ''} ${player.isImposter && gameState.phase === 'game-over' ? 'imposter' : ''}`;
+                card.onclick = () => selectPlayer(player.id);
+
+                const status = player.eliminated ? 'Eliminated' : 'Alive';
+
+                card.innerHTML = `
+                    <div class="player-avatar">${player.avatar}</div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-status">${status}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Render action buttons
+        function renderActionButtons() {
+            const panel = document.getElementById('action-panel');
+
+            if (gameState.phase === 'setup') {
+                panel.innerHTML = `
+                    <button class="btn" id="start-game-btn">Start Game</button>
+                `;
+            } else if (gameState.phase === 'discussion') {
+                panel.innerHTML = `
+                    <button class="btn secondary" id="start-voting-btn">Start Voting</button>
+                `;
+            } else if (gameState.phase === 'voting') {
+                panel.innerHTML = `
+                    <button class="btn" id="vote-btn">Vote to Eliminate</button>
+                    <button class="btn secondary" id="skip-vote-btn">Skip Vote</button>
+                `;
+            } else if (gameState.phase === 'results') {
+                panel.innerHTML = `
+                    <button class="btn" id="next-round-btn">Next Round</button>
+                `;
+            }
+        }
+
+        // Select player
+        function selectPlayer(playerId) {
+            if (gameState.phase === 'voting') {
+                gameState.selectedPlayer = playerId;
+                renderPlayers();
+            }
+        }
+
+        // Start discussion phase
+        function startDiscussion() {
+            gameState.phase = 'discussion';
+            document.getElementById('game-phase').textContent = 'Discussion';
+            renderWordReveal();
+            renderActionButtons();
+
+            // Start timer
+            gameState.discussionTime = 60;
+            document.getElementById('timer-display').style.display = 'block';
+            updateTimer();
+
+            gameState.timer = setInterval(() => {
+                gameState.discussionTime--;
+                updateTimer();
+
+                if (gameState.discussionTime <= 0) {
+                    clearInterval(gameState.timer);
+                    startVoting();
+                }
+            }, 1000);
+
+            addDiscussionMessage('System', 'Discussion time! Describe your word without saying it directly. You have 60 seconds.');
+        }
+
+        function updateTimer() {
+            document.getElementById('timer-display').textContent = gameState.discussionTime;
+            if (gameState.discussionTime <= 10) {
+                document.getElementById('timer-display').style.color = '#f44336';
+            } else {
+                document.getElementById('timer-display').style.color = '#667eea';
+            }
+        }
+
+        // Start voting phase
+        function startVoting() {
+            gameState.phase = 'voting';
+            document.getElementById('game-phase').textContent = 'Voting';
+            document.getElementById('timer-display').style.display = 'none';
+            clearInterval(gameState.timer);
+            renderActionButtons();
+            addDiscussionMessage('System', 'Voting time! Choose who you think is the imposter.');
+        }
+
+        // Handle voting
+        function handleVote() {
+            if (gameState.selectedPlayer === null) {
+                showNotification('Select a player to vote for!', 'error');
+                return;
+            }
+
+            // Simulate voting (in real multiplayer, this would collect votes from all players)
+            gameState.votes = {};
+            gameState.players.forEach(player => {
+                if (!player.eliminated) {
+                    // AI voting logic - crew votes for imposter, imposter votes randomly
+                    let voteFor = gameState.selectedPlayer; // For simplicity, everyone votes with player
+                    if (player.isImposter) {
+                        // Imposter votes for random crew member
+                        const crewMembers = gameState.players.filter(p => !p.isImposter && !p.eliminated && p.id !== player.id);
+                        if (crewMembers.length > 0) {
+                            voteFor = crewMembers[Math.floor(Math.random() * crewMembers.length)].id;
+                        }
+                    }
+                    gameState.votes[voteFor] = (gameState.votes[voteFor] || 0) + 1;
+                }
+            });
+
+            showVotingResults();
+        }
+
+        function showVotingResults() {
+            gameState.phase = 'results';
+            document.getElementById('game-phase').textContent = 'Results';
+
+            // Find player with most votes
+            let maxVotes = 0;
+            let eliminatedPlayer = null;
+            for (const [playerId, votes] of Object.entries(gameState.votes)) {
+                if (votes > maxVotes) {
+                    maxVotes = votes;
+                    eliminatedPlayer = parseInt(playerId);
+                }
+            }
+
+            if (eliminatedPlayer !== null) {
+                const player = gameState.players[eliminatedPlayer];
+                player.eliminated = true;
+                addDiscussionMessage('System', `${player.name} was eliminated! They were ${player.isImposter ? 'the Imposter' : 'Crew'} with word "${player.word}"!`);
+
+                if (player.isImposter) {
+                    endGame('Crew Victory!', 'The imposter has been eliminated!');
+                    return;
+                }
+            } else {
+                addDiscussionMessage('System', 'No one was eliminated.');
+            }
+
+            // Check if imposter won (only 2 players left)
+            const alivePlayers = gameState.players.filter(p => !p.eliminated);
+            if (alivePlayers.length <= 2) {
+                const imposterAlive = alivePlayers.some(p => p.isImposter);
+                if (imposterAlive) {
+                    endGame('Imposter Victory!', 'The imposter survived!');
+                    return;
+                }
+            }
+
+            renderActionButtons();
+        }
+
+        function nextRound() {
+            gameState.round++;
+            gameState.phase = 'discussion';
+            document.getElementById('game-phase').textContent = 'Discussion';
+            document.getElementById('round-number').textContent = gameState.round;
+            gameState.selectedPlayer = null;
+            renderPlayers();
+            startDiscussion();
+        }
+
+        function endGame(title, message) {
+            gameState.phase = 'game-over';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'game-over';
+            overlay.innerHTML = `
+                <h2>${title}</h2>
+                <div class="role-reveal">
+                    <h3>Final Roles</h3>
+                    <div class="final-roles">
+                        ${gameState.players.map(player => `
+                            <div class="final-role">
+                                <div>${player.name}</div>
+                                <div style="color: ${player.isImposter ? '#f44336' : '#4CAF50'}">${player.isImposter ? 'Imposter' : 'Crew'}</div>
+                                <div style="font-size: 0.8em; color: #ccc">Word: ${player.word}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <p>${message}</p>
+                <button class="btn" onclick="location.reload()">Play Again</button>
+            `;
+
+            document.body.appendChild(overlay);
+        }
+
+        // Discussion system
+        function addDiscussionMessage(sender, message) {
+            const log = document.getElementById('discussion-log');
+            const messageEl = document.createElement('div');
+            messageEl.className = `chat-message ${sender === 'You' ? 'own' : ''}`;
+            messageEl.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            log.appendChild(messageEl);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        document.getElementById('send-btn').addEventListener('click', () => {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message) {
+                addDiscussionMessage('You', message);
+                input.value = '';
+
+                // AI responses
+                setTimeout(() => {
+                    const alivePlayers = gameState.players.filter(p => !p.eliminated && p.id !== 0);
+                    if (alivePlayers.length > 0) {
+                        const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+                        const responses = [
+                            'I think I know what it is...',
+                            'This is tricky!',
+                            'I\'m getting a clear picture.',
+                            'Hmm, not sure about that description.',
+                            'That sounds familiar...',
+                            'I\'m completely lost!',
+                            'I think I\'ve got it!'
+                        ];
+                        addDiscussionMessage(randomPlayer.name, responses[Math.floor(Math.random() * responses.length)]);
+                    }
+                }, 1000 + Math.random() * 2000);
+            }
+        });
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('send-btn').click();
+            }
+        });
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Update alive count
+        function updateAliveCount() {
+            const aliveCount = gameState.players.filter(p => !p.eliminated).length;
+            document.getElementById('alive-count').textContent = aliveCount;
+        }
+
+        // Event listeners
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'start-game-btn') {
+                startDiscussion();
+            } else if (e.target.id === 'start-voting-btn') {
+                startVoting();
+            } else if (e.target.id === 'vote-btn') {
+                handleVote();
+            } else if (e.target.id === 'skip-vote-btn') {
+                showVotingResults();
+            } else if (e.target.id === 'next-round-btn') {
+                nextRound();
+            }
+        });
+
+        // Initialize game
+        function initGame() {
+            initPlayers();
+            renderWordReveal();
+            renderPlayers();
+            renderActionButtons();
+            updateAliveCount();
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
