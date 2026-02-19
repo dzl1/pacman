@@ -91,7 +91,7 @@ function createPacman() {
     const material = new THREE.MeshStandardMaterial({ 
         color: 0xffd400,
         emissive: 0xffd400,
-        emissiveIntensity: 0.3
+        emissiveIntensity: 0.3 
     });
     pacman = new THREE.Mesh(geometry, material);
     pacman.position.set(1, 0.4, 1);
